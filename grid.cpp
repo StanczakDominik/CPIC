@@ -22,6 +22,19 @@ class Grid
     ArrayXd gather_density();
 };
 
+ArrayXd PythonLinSpaced(int NG, float x_min, float x_max)
+{
+    // Equivalent to python's numpy.linspace(... endpoint = False;
+    ArrayXd x(NG);
+    float dx = (x_max-x_min)/NG;
+    for (int i = 1; i < NG; i++)
+    {
+        x(i) = i * dx;
+    }
+    return x;
+}
+
+
 Grid::Grid(int _NG, float _L, float _c, float _epsilon_0)
 {
     // compute effective charges and masses of macroparticles
@@ -30,7 +43,8 @@ Grid::Grid(int _NG, float _L, float _c, float _epsilon_0)
     c = _c;
     epsilon_0 = _epsilon_0;
     // allocate position and velocity arrays
-    x = ArrayXd::LinSpaced(NG, 0, L); // TODO: this is inclusive on L, not inclusive in Python
+    x = PythonLinSpaced(NG, 0, L);
+    dx = x(1) - x(0);
 }
 
 int main()
