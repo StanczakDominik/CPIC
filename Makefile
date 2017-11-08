@@ -1,4 +1,8 @@
-species.o: species.cpp
-	g++ species.cpp -o species.o
-grid.o: grid.cpp
-	g++ grid.cpp -o grid.o
+CC=gcc
+CFLAGS=-I.
+DEPS = grid.hpp species.hpp
+OBJ = grid.cpp species.hpp
+
+%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
