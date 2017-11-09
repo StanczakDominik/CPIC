@@ -32,6 +32,12 @@ Grid::Grid(int _NG, float _L, float _c, float _epsilon_0)
 
 ArrayXd Grid::gather_density(Species s)
 {
+    ArrayXd logical_coordinates = (int)(s.x / dx);
+    ArrayXd charge_to_right = (s.x / dx) - logical_coordinates;
+    ArrayXd charge_to_left = 1.0 - charge_to_right;
+:    /* charge_hist_to_right = np.bincount(logical_coordinates+1, charge_to_right, minlength=x.size+1) */
+    /* charge_hist_to_left = np.bincount(logical_coordinates, charge_to_left, minlength=x.size+1) */
+    /* return charge_hist_to_right + charge_hist_to_left */
     ArrayXd charge_density(NG);
     return charge_density;
 }
