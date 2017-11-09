@@ -1,3 +1,5 @@
+#ifndef SPECIES_H
+#define SPECIES_H
 #include <Eigen/Dense>
 using namespace std;
 using namespace Eigen;
@@ -14,6 +16,6 @@ class Species
         ArrayXd x;
         ArrayX3d v;
     Species(int N, float q, float m, float scaling);
-    ArrayXd gather_density();
 };
 
+#endif /* SPECIES_H */

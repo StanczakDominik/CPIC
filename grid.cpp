@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "grid.hpp"
+#include "species.hpp"
 using namespace std;
 using namespace Eigen;
 
@@ -29,7 +30,13 @@ Grid::Grid(int _NG, float _L, float _c, float _epsilon_0)
     dx = x(1) - x(0);
 }
 
-int main()
+ArrayXd Grid::gather_density(Species s)
+{
+    ArrayXd charge_density(NG);
+    return charge_density;
+}
+
+void test_grid()
 {
     Grid g = Grid(10, 1, 1, 1);
 

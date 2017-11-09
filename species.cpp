@@ -18,7 +18,10 @@ Species::Species(int _N, float _q, float _m, float _scaling)
     v = ArrayX3d(N, 3);
 }
 
-int main()
+
+
+
+void test_species()
 {
     Species s = Species(3, 1, 1, 10.0);
     s.x << 1.5, 3.5, 6.5;
