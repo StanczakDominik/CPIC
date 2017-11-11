@@ -21,6 +21,7 @@ class Grid
         ArrayX3d electric_field;
         ArrayX3d magnetic_field;
     Grid(int _NG, float _L, float _c, float _epsilon_0);
+    void init_solve(bool neutralize);
     ArrayXd gather_density(Species s);
 };
 

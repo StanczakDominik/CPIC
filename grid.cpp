@@ -42,6 +42,31 @@ ArrayXd Grid::gather_density(Species s)
     return charge_density;
 }
 
+void initial_solve(bool neutralize)
+{
+    /* rho_F = fft(rho); */
+    /* if(neutralize) */
+    /* { */
+    /*     rho_F(0) = 0; */
+    /* } */
+    /* field_F = rho_F / (1j * k * epsilon) */
+    /* return fft.ifft(field_F).real) */
+}
+
+void solve()
+{
+    ArrayXd Fplus = 0.5 * (electric_field.col(0) + c * magnetic_field.col(1));
+    ArrayXd Fminus = 0.5 * (electric_field.col(0) - c * magnetic_field.col(1));
+    ArrayXd Gplus = 0.5 * (electric_field.col(1) + c * magnetic_field.col(0));
+    ArrayXd Gminus = 0.5 * (electric_field.col(1) - c * magnetic_field.col(0));
+
+    Fplus.tail(NG-1) = Fplus.head(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0;
+    Gplus.tail(NG-1) = Gplus.head(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0;
+    Fminus.head(NG-1) = Fminus.tail(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0;
+    Gminus.head(NG-1) = Gminus.tail(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0;
+}
+
+
 void test_grid()
 {
     Grid g = Grid(10, 1, 1, 1);
