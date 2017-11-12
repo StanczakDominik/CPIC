@@ -1,4 +1,5 @@
 #include <iostream>
+
 #include <Eigen/Dense>
 #include "grid.hpp"
 #include "species.hpp"
@@ -30,16 +31,28 @@ Grid::Grid(int _NG, float _L, float _c, float _epsilon_0)
     dx = x(1) - x(0);
 }
 
+ArrayXd Grid::bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength)
+{
+    ArrayXd result = ArrayXd::Zero(minlength);
+    for (int j = 0; j < cell_numbers.size(); j++)
+    {
+        int i = cell_numbers[j];
+        result[i] += weights[i];
+    }
+    return result;
+}
+
+
 ArrayXd Grid::gather_density(Species s)
 {
     ArrayXd logical_coordinates = floor(s.x / dx);
     ArrayXd charge_to_right = (s.x / dx) - logical_coordinates;
-    ArrayXd charge_to_left = 1.0 - charge_to_right;
-    /* charge_hist_to_right = np.bincount(logical_coordinates+1, charge_to_right, minlength=x.size+1) */
-    /* charge_hist_to_left = np.bincount(logical_coordinates, charge_to_left, minlength=x.size+1) */
-    /* return charge_hist_to_right + charge_hist_to_left */
+    
+    ArrayXd charge_hist_to_right = bincount(logical_coordinates+1, charge_to_right, NG+1);
+    ArrayXd charge_hist_to_left = bincount(logical_coordinates, 1-charge_to_right, NG+1);
     ArrayXd charge_density(NG);
-    return charge_density;
+    return charge_hist_to_right + charge_hist_to_left;
+
 }
 
 void Grid::initial_solve(bool neutralize)

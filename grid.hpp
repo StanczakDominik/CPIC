@@ -23,6 +23,7 @@ class Grid
     Grid(int _NG, float _L, float _c, float _epsilon_0);
     void initial_solve(bool neutralize);
     void solve();
+    ArrayXd bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength);
     ArrayXd gather_density(Species s);
 };
 

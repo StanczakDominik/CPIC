@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-I.
+CFLAGS=-I. -Wall -Werror -std=c++11
 DEPS = grid.hpp species.hpp
 OBJ = grid.cpp species.hpp
 
