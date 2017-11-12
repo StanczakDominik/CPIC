@@ -5,6 +5,7 @@
 using namespace std;
 using namespace Eigen;
 
+class Species;
 class Grid
 {
     public:
@@ -26,6 +27,8 @@ class Grid
     ArrayXd bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength);
     void gather_charge(Species s);
     void gather_charge_periodic(Species s);
+    void gather_current(Species s);
+    void gather_current_periodic(Species s);
 };
 
 #endif /* GRID_H */

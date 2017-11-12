@@ -4,6 +4,7 @@
 using namespace std;
 using namespace Eigen;
 
+class Grid;
 class Species
 {
     public:
@@ -16,6 +17,10 @@ class Species
         ArrayXd x;
         ArrayX3d v;
     Species(int N, float q, float m, float scaling);
+    void velocity_push();
+    void position_push();
+    ArrayX3d interpolate_electric_field(Grid g);
+    ArrayX3d interpolate_magnetic_field(Grid g);
 };
 
 #endif /* SPECIES_H */

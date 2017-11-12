@@ -60,7 +60,15 @@ void Grid::gather_charge_periodic(Species s)
     charge_density.head(1) += charge_density.tail(1);
 }
 
+void Grid::gather_current(Species s)
+{
+    return; 
+}
 
+void Grid:: gather_current_periodic(Species s)
+{
+    gather_current(s);
+}
 
 void Grid::initial_solve(bool neutralize)
 {
@@ -86,15 +94,4 @@ void Grid::solve()
     /* Gminus.head(NG-1) = Gminus.tail(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0; */
 }
 
-
-void test_grid()
-{
-    Grid g = Grid(10, 1, 1, 1);
-
-    cout << g.x << endl;
-    cout << g.x.mean() << endl;
-    cout << g.c << endl;
-    cout << g.epsilon_0 << endl;
-    cout << g.x.size() << endl;
-}
 
