@@ -43,7 +43,7 @@ ArrayXd Grid::bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength)
 }
 
 
-ArrayXd Grid::gather_density(Species s)
+void Grid::gather_charge(Species s)
 {
     ArrayXd logical_coordinates = floor(s.x / dx);
     ArrayXd charge_to_right = (s.x / dx) - logical_coordinates;
@@ -51,9 +51,16 @@ ArrayXd Grid::gather_density(Species s)
     ArrayXd charge_hist_to_right = bincount(logical_coordinates+1, charge_to_right, NG+1);
     ArrayXd charge_hist_to_left = bincount(logical_coordinates, 1-charge_to_right, NG+1);
     ArrayXd charge_density(NG);
-    return charge_hist_to_right + charge_hist_to_left;
-
+    charge_density = charge_hist_to_right + charge_hist_to_left;
 }
+
+void Grid::gather_charge_periodic(Species s)
+{
+    gather_charge(s);
+    charge_density.head(1) += charge_density.tail(1);
+}
+
+
 
 void Grid::initial_solve(bool neutralize)
 {

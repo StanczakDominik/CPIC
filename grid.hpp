@@ -24,7 +24,8 @@ class Grid
     void initial_solve(bool neutralize);
     void solve();
     ArrayXd bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength);
-    ArrayXd gather_density(Species s);
+    void gather_charge(Species s);
+    void gather_charge_periodic(Species s);
 };
 
 #endif /* GRID_H */
