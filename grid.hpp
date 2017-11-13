@@ -21,6 +21,7 @@ class Grid
         ArrayX2d current_density_yz;
         ArrayX3d electric_field;
         ArrayX3d magnetic_field;
+        float dt;
     Grid(int _NG, float _L, float _c, float _epsilon_0);
     void initial_solve(bool neutralize);
     void solve();

@@ -83,15 +83,22 @@ void Grid::initial_solve(bool neutralize)
 
 void Grid::solve()
 {
-    ArrayXd Fplus = 0.5 * (electric_field.col(0) + c * magnetic_field.col(1));
-    ArrayXd Fminus = 0.5 * (electric_field.col(0) - c * magnetic_field.col(1));
-    ArrayXd Gplus = 0.5 * (electric_field.col(1) + c * magnetic_field.col(0));
-    ArrayXd Gminus = 0.5 * (electric_field.col(1) - c * magnetic_field.col(0));
+    ArrayXd Fplus = 0.5 * (electric_field.col(1) + c * magnetic_field.col(2));
+    ArrayXd Fminus = 0.5 * (electric_field.col(1) - c * magnetic_field.col(2));
+    ArrayXd Gplus = 0.5 * (electric_field.col(2) + c * magnetic_field.col(1));
+    ArrayXd Gminus = 0.5 * (electric_field.col(2) - c * magnetic_field.col(1));
 
-    /* Fplus.tail(NG-1) = Fplus.head(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0; */
-    /* Gplus.tail(NG-1) = Gplus.head(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0; */
-    /* Fminus.head(NG-1) = Fminus.tail(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0; */
-    /* Gminus.head(NG-1) = Gminus.tail(NG-1) - 0.5 * dt * current.block(2, NG) / epsilon_0; */
+    // propagate forwards
+    Fplus.tail(NG-1) = Fplus.head(NG-1) - 0.5 * dt * current_density_yz.block(2, 0, NG-1, 1) / epsilon_0;
+    Gplus.tail(NG-1) = Gplus.head(NG-1) - 0.5 * dt * current_density_yz.block(2, 1, NG-1, 1) / epsilon_0;
+    // propagate backwards
+    Fminus.head(NG-1) = Fminus.tail(NG-1) - 0.5 * dt * current_density_yz.block(2, 0, NG-1, 1) / epsilon_0;
+    Gminus.head(NG-1) = Gminus.tail(NG-1) - 0.5 * dt * current_density_yz.block(2, 1, NG-1, 1) / epsilon_0;
+
+    electric_field.col(1) = Fplus + Fminus;
+    electric_field.col(2) = Gplus + Gminus;
+    magnetic_field.col(1) = (Gplus - Gminus)/c;
+    magnetic_field.col(2) = (Fplus - Fminus)/c;
 }
 
 
