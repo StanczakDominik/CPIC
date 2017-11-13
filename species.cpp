@@ -27,19 +27,34 @@ void Species::position_push()
 
 void Species::velocity_push()
 {
+    float c = 1; // todo reference from grid
+    v.colwise() /= (1 - v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
+    ArrayX3d half_force = (q * 0.5 / m * dt) * E;
+    v += half_force;
+
+    ArrayX3d t = B * q * dt / (2 * m * (1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt());
+    cout << v.rows() << endl << v.cols() << endl;
+    cout << t.rows() << endl << t.cols() << endl;
+    /* ArrayX3d uprime = v + v.rowwise().cross(t.rowwise()); */
+    /* ArrayXd divisor = 1 - (v/c).pow(2).rowwise().sum(); */
+    /* cout << divisor.rows() << ", " << divisor.cols() << endl; */
+    /* cout << v.rows() << ", " << v.cols() << endl; */
+    /* v.colwise() /= divisor; */
+    
     return;
 }
 
 void interpolate_fields(Grid g)
 {
-    ArrayXd logical_coordinates = floor(s.x / dx);
-    ArrayXd right_fractions  = (s.x / dx) - logical_coordinates;
+    /* ArrayXd logical_coordinates = floor(s.x / dx); */
+    /* ArrayXd right_fractions  = (s.x / dx) - logical_coordinates; */
     
-    ArrayXd charge_hist_to_right = bincount(logical_coordinates+1, charge_to_right, NG+1);
-    ArrayXd charge_hist_to_left = bincount(logical_coordinates, 1-charge_to_right, NG+1);
-    ArrayXd charge_density(NG);
-    charge_density = charge_hist_to_right + charge_hist_to_left;
+    /* ArrayXd charge_hist_to_right = bincount(logical_coordinates+1, charge_to_right, NG+1); */
+    /* ArrayXd charge_hist_to_left = bincount(logical_coordinates, 1-charge_to_right, NG+1); */
+    /* ArrayXd charge_density(NG); */
+    /* charge_density = charge_hist_to_right + charge_hist_to_left; */
     // TODO
+    return ;
 }
 
 
