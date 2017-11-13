@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "species.hpp"
+#include "grid.hpp"
 using namespace std;
 using namespace Eigen;
 
@@ -24,6 +25,22 @@ void Species::position_push()
 }
 
 
+void Species::velocity_push()
+{
+    return;
+}
+
+void interpolate_fields(Grid g)
+{
+    ArrayXd logical_coordinates = floor(s.x / dx);
+    ArrayXd right_fractions  = (s.x / dx) - logical_coordinates;
+    
+    ArrayXd charge_hist_to_right = bincount(logical_coordinates+1, charge_to_right, NG+1);
+    ArrayXd charge_hist_to_left = bincount(logical_coordinates, 1-charge_to_right, NG+1);
+    ArrayXd charge_density(NG);
+    charge_density = charge_hist_to_right + charge_hist_to_left;
+    // TODO
+}
 
 
 
