@@ -18,6 +18,12 @@ Species::Species(int _N, float _q, float _m, float _scaling)
     v = ArrayX3d(N, 3);
 }
 
+void Species::position_push()
+{
+    x += v.col(0) * dt;
+}
+
+
 
 
 

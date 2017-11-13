@@ -16,6 +16,7 @@ class Species
         float eff_m;
         ArrayXd x;
         ArrayX3d v;
+        float dt;
     Species(int N, float q, float m, float scaling);
     void velocity_push();
     void position_push();
