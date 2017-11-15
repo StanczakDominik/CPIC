@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <eigen3/unsupported/Eigen/FFT>
 #include <Eigen/Dense>
 #include "grid.hpp"
 #include "species.hpp"
@@ -42,6 +43,7 @@ ArrayXd Grid::bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength)
     return result;
 }
 
+// CHARGE AND CURRENT DEPOSITION
 
 void Grid::gather_charge(Species s)
 {
@@ -69,6 +71,8 @@ void Grid:: gather_current_periodic(Species s)
 {
     gather_current(s);
 }
+
+// FIELD SOLVERS
 
 void Grid::initial_solve(bool neutralize)
 {

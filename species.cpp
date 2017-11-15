@@ -33,15 +33,22 @@ void Species::velocity_push()
     v += half_force;
 
     ArrayX3d t = B * q * dt / (2 * m);
-    ArrayXd division = (1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
-    t.colwise() /= division;
-    /* ArrayX3d uprime = v + v.rowwise().cross(t.rowwise()); */
-    /* ArrayXd divisor = 1 - (v/c).pow(2).rowwise().sum(); */
-    /* cout << divisor.rows() << ", " << divisor.cols() << endl; */
-    /* cout << v.rows() << ", " << v.cols() << endl; */
-    /* v.colwise() /= divisor; */
-    
-    return;
+    t.colwise() /= (1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
+    ArrayX3d t2 = 2 * t;
+    t2.colwise() /= 1 + t.pow(2).rowwise().sum();
+
+    ArrayX3d uprime = v;
+    for (int i = 0; i < N; i++)
+    {
+        uprime.matrix().row(i) += v.row(i).matrix().cross(t.row(i).matrix());
+        v.matrix().row(i) += uprime.row(i).matrix().cross(t2.row(i).matrix());
+    }
+    v += half_force;
+
+    ArrayXd final_gamma =(1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
+    v.colwise() /= final_gamma;
+
+    /* return (final_gamma - 1).sum() * eff_m * c * c; */
 }
 
 void interpolate_fields(Grid g)

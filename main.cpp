@@ -58,6 +58,8 @@ int main()
        0,0,1,
        1,0,0,
        0,1,0;
-   /* cout << cross(a.matrix().rowwise(), b.matrix().rowwise()) << endl; */
-   cout << a.matrix().cross(b.matrix()) << endl;
+   MatrixX3d am = a.matrix();
+   MatrixX3d bm = b.matrix();
+
+   cout << am.rowwise().cross(bm.row(0)) << endl;
 }
