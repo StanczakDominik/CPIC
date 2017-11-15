@@ -2,6 +2,7 @@
 #include "grid.hpp"
 #include "species.hpp"
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 using namespace std;
 using namespace Eigen;
 
@@ -24,7 +25,7 @@ void test_charge_density()
     cout << g.charge_density << endl;
 }
 
-int main()
+void test_pusher()
 {
    Species s = Species(10, 1, 1, 1);
    s.E = ArrayX3d::Zero(s.N, 3);
@@ -34,6 +35,29 @@ int main()
    cout << "v\n" << s.v << endl << "x\n" << s.x << endl;
    s.velocity_push();
    cout << "v\n" << s.v << endl << "x\n" << s.x << endl;
-   
-   return 0;
+}
+
+void demonstrate_cross()
+{
+   Array3d a;  
+   Array3d b;
+   a <<1,0,0;
+   b <<0,1,0;
+   cout << a.matrix().cross(b.matrix()) << endl;
+}
+
+int main()
+{
+   ArrayX3d a(4,3);  
+   ArrayX3d b(4,3);
+   a <<1,0,0,
+       0,1,0,
+       0,0,1,
+       1,0,0;
+   b <<0,1,0,
+       0,0,1,
+       1,0,0,
+       0,1,0;
+   /* cout << cross(a.matrix().rowwise(), b.matrix().rowwise()) << endl; */
+   cout << a.matrix().cross(b.matrix()) << endl;
 }

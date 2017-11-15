@@ -35,7 +35,7 @@ void Species::velocity_push()
     ArrayX3d t = B * q * dt / (2 * m);
     ArrayXd division = (1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
     t.colwise() /= division;
-    ArrayX3d uprime = v + v.rowwise().cross(t.rowwise());
+    /* ArrayX3d uprime = v + v.rowwise().cross(t.rowwise()); */
     /* ArrayXd divisor = 1 - (v/c).pow(2).rowwise().sum(); */
     /* cout << divisor.rows() << ", " << divisor.cols() << endl; */
     /* cout << v.rows() << ", " << v.cols() << endl; */
