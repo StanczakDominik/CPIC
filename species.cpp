@@ -25,7 +25,7 @@ void Species::position_push()
 }
 
 
-void Species::velocity_push()
+double Species::velocity_push()
 {
     float c = 1; // todo reference from grid
     v.colwise() /= (1 - v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
@@ -37,33 +37,44 @@ void Species::velocity_push()
     ArrayX3d t2 = 2 * t;
     t2.colwise() /= 1 + t.pow(2).rowwise().sum();
 
-    ArrayX3d uprime = v;
+    MatrixX3d uprime = v.matrix();
     for (int i = 0; i < N; i++)
     {
-        uprime.matrix().row(i) += v.row(i).matrix().cross(t.row(i).matrix());
-        v.matrix().row(i) += uprime.row(i).matrix().cross(t2.row(i).matrix());
+        uprime.row(i) += v.row(i).matrix().cross(t.row(i).matrix());
+        v.row(i).matrix() += uprime.row(i).matrix().cross(t2.row(i).matrix());
     }
     v += half_force;
 
     ArrayXd final_gamma =(1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
     v.colwise() /= final_gamma;
 
-    /* return (final_gamma - 1).sum() * eff_m * c * c; */
+    return (final_gamma - 1).sum() * eff_m * c * c;
 }
 
-void interpolate_fields(Grid g)
+void Species::periodic_interpolate_fields(Grid g)
 {
-    /* ArrayXd logical_coordinates = floor(s.x / dx); */
-    /* ArrayXd right_fractions  = (s.x / dx) - logical_coordinates; */
-    
-    /* ArrayXd charge_hist_to_right = bincount(logical_coordinates+1, charge_to_right, NG+1); */
-    /* ArrayXd charge_hist_to_left = bincount(logical_coordinates, 1-charge_to_right, NG+1); */
-    /* ArrayXd charge_density(NG); */
-    /* charge_density = charge_hist_to_right + charge_hist_to_left; */
-    // TODO
-    return ;
+    ArrayXd logical_coordinates = floor(x / g.dx);
+    ArrayXd right_fractions  = (x / g.dx) - logical_coordinates;
+
+    for (int i =0; i < N; i ++)
+    {
+        E(i) = (1 - right_fractions(i)) * g.electric_field(i+1) + right_fractions(i) * g.electric_field((i+1) % g.NG + 1);
+        B(i) = (1 - right_fractions(i)) * g.magnetic_field(i+1) + right_fractions(i) * g.magnetic_field((i+1) % g.NG + 1);
+    }
 }
 
+
+void Species::aperiodic_interpolate_fields(Grid g)
+{
+    ArrayXd logical_coordinates = floor(x / g.dx);
+    ArrayXd right_fractions  = (x / g.dx) - logical_coordinates;
+
+    for (int i =0; i < N; i ++)
+    {
+        E(i) = (1 - right_fractions(i)) * g.electric_field(i+1) + right_fractions(i) * E(i+2);
+        B(i) = (1 - right_fractions(i)) * g.magnetic_field(i+1) + right_fractions(i) * B(i+2);
+    }
+}
 
 
 void test_species()

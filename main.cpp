@@ -46,7 +46,7 @@ void demonstrate_cross()
    cout << a.matrix().cross(b.matrix()) << endl;
 }
 
-int main()
+void demonstrate_cross_rowwise()
 {
    ArrayX3d a(4,3);  
    ArrayX3d b(4,3);
@@ -62,4 +62,17 @@ int main()
    MatrixX3d bm = b.matrix();
 
    cout << am.rowwise().cross(bm.row(0)) << endl;
+}
+
+void fancy_indexing()
+{
+   ArrayXd a(5);
+   a << 0, 1, 2, 3, 4;
+   ArrayXi indices(3);
+   indices << 1, 2, 3;
+}
+
+int main()
+{
+   fancy_indexing();
 }
