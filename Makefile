@@ -1,17 +1,19 @@
 CC=g++
 CFLAGS=-I. -Wall -Werror -std=c++11 -lfftw3
-DEPS = grid.hpp species.hpp
-OBJ = grid.cpp species.hpp
+CFILES=species.cpp grid.cpp simulation.cpp
+HFILES=species.hpp grid.hpp simulation.hpp
+OFILES=species.o grid.o simulation.o
 
 all: main
-main: main.o grid.o species.o
-	$(CC) -o main main.o grid.o species.o $(CFLAGS) $(LIBS)
+main: main.cpp $(OFILES)
+	$(CC) -o main main.o $(OFILES) $(CFLAGS) 
 
-grid.o: grid.cpp grid.hpp species.hpp
+grid.o: $(CFILES) $(HFILES)
 	$(CC) -c grid.cpp $(CFLAGS)
-
-species.o: species.cpp grid.hpp species.hpp
+species.o: $(CFILES) $(HFILES)
 	$(CC) -c species.cpp $(CFLAGS)
+simulation.o: $(CFILES) $(HFILES)
+	$(CC) -c simulation.cpp $(CFLAGS)
 
 clean:
 	rm *.o
