@@ -88,7 +88,7 @@ void Grid::initial_solve(bool neutralize)
 void Grid::solve()
 {
     // update longitudinal field
-    electric_field.col(1) -= dt / epsilon_0 * current_density_x.head(NG+2);
+    electric_field.col(0) -= dt / epsilon_0 * current_density_x.head(NG+2);
 
     // update transversal field
     ArrayXd Fplus = 0.5 * (electric_field.col(1) + c * magnetic_field.col(2));
