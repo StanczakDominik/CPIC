@@ -1,5 +1,4 @@
 #include <Eigen/Dense>
-#include "species.hpp"
 #ifndef TEMPORAL_H
 #define TEMPORAL_H
 using namespace std;
@@ -13,7 +12,13 @@ class Temporal
         int NT;
 
         ArrayXd t;
-    Temporal(int _NT, float T);
+    Temporal(int _NT, float _T)
+    {
+        NT = _NT;
+        T = _T;
+        t = ArrayXd::LinSpaced(0, T, NT);
+        dt = t(1) - t(0); // TODO check whether this fits python
+    }
     /* Temporal(float _dt, float T); */
 };
 

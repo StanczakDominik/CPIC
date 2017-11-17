@@ -15,8 +15,8 @@ void Simulation::iteration(int i)
     //for species in Species:
     species.periodic_interpolate_fields(grid);
     species.velocity_push();
-    species.gather_charge(g);
-    species.gather_current(g);
+    grid.gather_charge(species);
+    grid.gather_current(species);
     // end for
     grid.solve();
     /* for species in Species: */

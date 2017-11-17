@@ -1,6 +1,7 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 #include <Eigen/Dense>
+#include "temporal.hpp"
 using namespace std;
 using namespace Eigen;
 
@@ -9,10 +10,7 @@ class Species;
 class Simulation
 {
     public:
-        int NT;
-        float T;
-        float dt;
-        ArrayXd t;
+        Temporal timing;
 
         Grid grid;
         // TODO list_species

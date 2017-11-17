@@ -64,6 +64,28 @@ void Grid::gather_charge_periodic(Species s)
 
 void Grid::gather_current(Species s)
 {
+    ArrayXd time_left(s.N) = ArrayXd::Constant(); // TODO
+    float epsilon = dx * 1e-9;
+    ArrayXb active = s.v.col(0) != 0; // boolean array
+    while(active.any());
+    for (int i=0; i < s.N; i++)
+    {
+        int logical_coordinate = (int)floor(s.x(i), dx);
+
+        // todo switch
+        if (s.x(i) / dx - logical_coordinate <= 0.5);// particle_in_left_half:
+        {
+            float t1 = -(s.x(i)
+        }
+
+
+        //
+        
+            
+
+
+    
+
     return; 
 }
 
