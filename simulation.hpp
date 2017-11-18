@@ -2,6 +2,7 @@
 #define SIMULATION_H
 #include <Eigen/Dense>
 #include "temporal.hpp"
+#include <vector>
 using namespace std;
 using namespace Eigen;
 
@@ -13,11 +14,10 @@ class Simulation
         Temporal timing;
 
         Grid grid;
-        // TODO list_species
-        Species species;
+        std::vector<Species> list_species;
         
-        str filename; // TODO get str
-        str title;
+        string filename;
+        string title;
 
     void iteration(int i);
     void run();
