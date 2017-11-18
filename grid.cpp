@@ -64,8 +64,8 @@ void Grid::gather_charge_periodic(Species s)
 
 void Grid::gather_current(Species s)
 {
-    ArrayXd time_left(s.N) = ArrayXd::Constant(); // TODO
-    float epsilon = dx * 1e-9;
+    ArrayXd time_left = ArrayXd::Constant(s.n, dx); // TODO
+    float epsilon = dx * 1e-10;
     ArrayXb active = s.v.col(0) != 0; // boolean array
     while(active.any());
     for (int i=0; i < s.N; i++)
