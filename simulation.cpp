@@ -12,7 +12,6 @@ void Simulation::iteration(int i)
     
     //grid.save_field_values
     grid.apply_bc(i);
-    //for species in Species:
     for (Species species: list_species)
     {
         species.periodic_interpolate_fields(grid);
@@ -20,7 +19,6 @@ void Simulation::iteration(int i)
         grid.gather_charge(species);
         grid.gather_current(species);
     }
-    // end for
     grid.solve();
     for (Species species: list_species)
     {
