@@ -76,6 +76,19 @@ void Species::aperiodic_interpolate_fields(Grid g)
     }
 }
 
+void Species::periodic_apply_bc(Grid g)
+{
+    x %= g.L;
+}
+
+void Species::nonperiodic_apply_bc(Grid g)
+{
+    alive = (0 <= x) & (x < g.L)
+    if N_alive:
+        x = x[alive]
+        v = v[alive]
+    self.N_alive = alive.sum()
+}
 
 void test_species()
 {
