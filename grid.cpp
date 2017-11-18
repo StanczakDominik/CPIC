@@ -65,55 +65,55 @@ void Grid::gather_charge_periodic(Species s)
 
 typedef Array<bool,Dynamic,1> ArrayXb;
 
-void Grid::gather_current(Species s)
+void Grid::gather_current(Species species)
 {
     float epsilon = dx * 1e-10;
-    for (int i=0; i < s.N; i++)
+    for (int i=0; i < species.N; i++)
     {
-        float x_velocity = s.v(i,0);
-        bool active = s.v(i).any();
+        float x_velocity = species.v(i,0);
+        bool active = species.v.row(i).any();
         float time_left = dt;
+        float xp = species.x(i);
         while(active)
         {
-            float xp = s.x(i);
             int logical_coordinate = (int)floor(xp/dx);
-            // TODO velocity zero case
 
-            bool particle_in_left_half = s.x(i) / dx - logical_coordinate <= 0.5;
-            if (article_in_left_half);
+            bool particle_in_left_half = species.x(i) / dx - logical_coordinate <= 0.5;
+            float s, t1;
+            if (particle_in_left_half)
             {
                 if(x_velocity > 0)
                 {
-                    float t1 = -(xp - logical_coordinate * dx) / x_velocity;
-                    float s = logical_coordinate * dx - epsilon;
+                    t1 = -(xp - logical_coordinate * dx) / x_velocity;
+                    s = logical_coordinate * dx - epsilon;
                 }
                 else
                 {
-                    float t1 = ((logical_coordinate + 0.5) * dx - xp) / x_velocity;
-                    float s = (logical_coordinate + 0.5) * dx + epsilon;
+                    t1 = ((logical_coordinate + 0.5) * dx - xp) / x_velocity;
+                    s = (logical_coordinate + 0.5) * dx + epsilon;
                 }
             }
             else // particle in right half
             {
                 if(x_velocity > 0)
                 {
-                    float t1 = ((logical_coordinate + 1 ) * dx)/ x_velocity;
-                    float s = (logical_coordinate + 1) * dx + epsilon;
+                    t1 = ((logical_coordinate + 1 ) * dx)/ x_velocity;
+                    s = (logical_coordinate + 1) * dx + epsilon;
                 }
                 else
                 {
-                    float t1 = -(xp - (logical_coordinate + 0.5) * dx) / x_velocity;
-                    float s = (logical_coordinate + 0.5) * dx + epsilon;
+                    t1 = -(xp - (logical_coordinate + 0.5) * dx) / x_velocity;
+                    s = (logical_coordinate + 0.5) * dx + epsilon;
                 }
             }
 
-            float time_overflow = time - t1;
+            float time_overflow = time_left - t1;
             bool switches_cells = time_overflow  > 0;
-            float time_in_this_iteration = switches_cells ? t1 : time;
+            float time_in_this_iteration = switches_cells ? t1 : time_left;
             time_in_this_iteration = (x_velocity == 0) ? dt : time_in_this_iteration;
 
-            int logical_cordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
-            int logical_cordinate_trans = particle_in_left_half ? logical_coordinate-1: logical_coordinate + 1;
+            int logical_coordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
+            int logical_coordinate_trans = particle_in_left_half ? logical_coordinate-1: logical_coordinate + 1;
 
             int sign = (int)(particle_in_left_half) * 2 - 1;
             float distance_to_center = (logical_coordinate + 0.5) * dx - xp;
@@ -122,10 +122,22 @@ void Grid::gather_current(Species s)
             float s1 = s0 + change_in_coverage;
             float w = 0.5 * (s0 + s1);
 
+            Array3d j_contribution = species.v.row(i) * species.eff_q / dt * time_in_this_iteration;
+            float y_contribution_to_current_cell = w * j_contribution(1);
+            float z_contribution_to_current_cell = w * j_contribution(2);
+            float y_contribution_to_next_cell = (1-w) * j_contribution(1);
+            float z_contribution_to_next_cell = (1-w) * j_contribution(2);
 
+            current_density_x(logical_coordinate_long + 1) += j_contribution(0);
+            current_density_yz(logical_coordinate + 2, 0) += y_contribution_to_current_cell;
+            current_density_yz(logical_coordinate + 2, 1) += z_contribution_to_current_cell;
+            current_density_yz(logical_coordinate_trans + 2, 0) += y_contribution_to_next_cell;
+            current_density_yz(logical_coordinate_trans + 2, 1) += z_contribution_to_next_cell;
 
-
-
+            active = switches_cells;
+            time_left = time_overflow;
+            xp = s;
+        }
     }
 }
 
