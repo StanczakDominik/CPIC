@@ -1,9 +1,10 @@
 #include <iostream>
-
+#include <cmath>
 #include <eigen3/unsupported/Eigen/FFT>
 #include <Eigen/Dense>
 #include "grid.hpp"
 #include "species.hpp"
+
 using namespace std;
 using namespace Eigen;
 
@@ -62,31 +63,70 @@ void Grid::gather_charge_periodic(Species s)
     charge_density.head(1) += charge_density.tail(1);
 }
 
+typedef Array<bool,Dynamic,1> ArrayXb;
+
 void Grid::gather_current(Species s)
 {
-    ArrayXd time_left = ArrayXd::Constant(s.n, dx); // TODO
     float epsilon = dx * 1e-10;
-    ArrayXb active = s.v.col(0) != 0; // boolean array
-    while(active.any());
     for (int i=0; i < s.N; i++)
     {
-        int logical_coordinate = (int)floor(s.x(i), dx);
-
-        // todo switch
-        if (s.x(i) / dx - logical_coordinate <= 0.5);// particle_in_left_half:
+        float x_velocity = s.v(i,0);
+        bool active = s.v(i).any();
+        float time_left = dt;
+        while(active)
         {
-            float t1 = -(s.x(i)
-        }
+            float xp = s.x(i);
+            int logical_coordinate = (int)floor(xp/dx);
+            // TODO velocity zero case
+
+            bool particle_in_left_half = s.x(i) / dx - logical_coordinate <= 0.5;
+            if (article_in_left_half);
+            {
+                if(x_velocity > 0)
+                {
+                    float t1 = -(xp - logical_coordinate * dx) / x_velocity;
+                    float s = logical_coordinate * dx - epsilon;
+                }
+                else
+                {
+                    float t1 = ((logical_coordinate + 0.5) * dx - xp) / x_velocity;
+                    float s = (logical_coordinate + 0.5) * dx + epsilon;
+                }
+            }
+            else // particle in right half
+            {
+                if(x_velocity > 0)
+                {
+                    float t1 = ((logical_coordinate + 1 ) * dx)/ x_velocity;
+                    float s = (logical_coordinate + 1) * dx + epsilon;
+                }
+                else
+                {
+                    float t1 = -(xp - (logical_coordinate + 0.5) * dx) / x_velocity;
+                    float s = (logical_coordinate + 0.5) * dx + epsilon;
+                }
+            }
+
+            float time_overflow = time - t1;
+            bool switches_cells = time_overflow  > 0;
+            float time_in_this_iteration = switches_cells ? t1 : time;
+            time_in_this_iteration = (x_velocity == 0) ? dt : time_in_this_iteration;
+
+            int logical_cordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
+            int logical_cordinate_trans = particle_in_left_half ? logical_coordinate-1: logical_coordinate + 1;
+
+            int sign = (int)(particle_in_left_half) * 2 - 1;
+            float distance_to_center = (logical_coordinate + 0.5) * dx - xp;
+            float s0 = 1 - sign * distance_to_center / dx;
+            float change_in_coverage = sign * x_velocity * time_in_this_iteration / dx;
+            float s1 = s0 + change_in_coverage;
+            float w = 0.5 * (s0 + s1);
 
 
-        //
-        
-            
 
 
-    
 
-    return; 
+    }
 }
 
 void Grid:: gather_current_periodic(Species s)
