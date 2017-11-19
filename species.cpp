@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include "species.hpp"
 #include "grid.hpp"
+#include <cmath>
 using namespace std;
 using namespace Eigen;
 
@@ -11,6 +12,7 @@ Species::Species(int _N, float _q, float _m, float _scaling)
     N = _N;
     q = _q;
     m = _m;
+    N_alive = N;
     scaling = _scaling;
     eff_q = q * scaling;
     eff_m = m * scaling;
@@ -38,7 +40,7 @@ double Species::velocity_push()
     t2.colwise() /= 1 + t.pow(2).rowwise().sum();
 
     MatrixX3d uprime = v.matrix();
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N_alive; i++)
     {
         uprime.row(i) += v.row(i).matrix().cross(t.row(i).matrix());
         v.row(i).matrix() += uprime.row(i).matrix().cross(t2.row(i).matrix());
@@ -56,7 +58,7 @@ void Species::periodic_interpolate_fields(Grid g)
     ArrayXd logical_coordinates = floor(x / g.dx);
     ArrayXd right_fractions  = (x / g.dx) - logical_coordinates;
 
-    for (int i =0; i < N; i ++)
+    for (int i =0; i < N_alive; i ++)
     {
         E(i) = (1 - right_fractions(i)) * g.electric_field(i+1) + right_fractions(i) * g.electric_field((i+1) % g.NG + 1);
         B(i) = (1 - right_fractions(i)) * g.magnetic_field(i+1) + right_fractions(i) * g.magnetic_field((i+1) % g.NG + 1);
@@ -69,7 +71,7 @@ void Species::aperiodic_interpolate_fields(Grid g)
     ArrayXd logical_coordinates = floor(x / g.dx);
     ArrayXd right_fractions  = (x / g.dx) - logical_coordinates;
 
-    for (int i =0; i < N; i ++)
+    for (int i =0; i < N_alive; i ++)
     {
         E(i) = (1 - right_fractions(i)) * g.electric_field(i+1) + right_fractions(i) * E(i+2);
         B(i) = (1 - right_fractions(i)) * g.magnetic_field(i+1) + right_fractions(i) * B(i+2);
@@ -78,16 +80,36 @@ void Species::aperiodic_interpolate_fields(Grid g)
 
 void Species::periodic_apply_bc(Grid g)
 {
-    x %= g.L;
+    x = x - (g.L * (x/g.L).floor());
 }
 
-void Species::nonperiodic_apply_bc(Grid g)
+void Species::aperiodic_apply_bc(Grid g)
 {
-    alive = (0 <= x) & (x < g.L)
-    if N_alive:
-        x = x[alive]
-        v = v[alive]
-    self.N_alive = alive.sum()
+    ArrayXi indices = ((0 < x) * (x < g.L)).cast<int>();
+    int N_alive_new = indices.sum();
+    if (N_alive != N_alive_new)
+    {
+        ArrayXd new_x(N_alive_new);
+        ArrayX3d new_v(N_alive_new, 3);
+        int j = 0;
+        for (int i = 0;  i < N_alive; i++)
+        {
+            if (indices(i))
+            {
+                new_x(j) = x(i);
+                new_v.row(j) = v.row(i);
+                j++;
+            }
+        }
+        N_alive = N_alive_new;
+        x = new_x;
+    }
+
+    /* alive = (0 <= x) & (x < g.L) */
+    /* if N_alive: */
+    /*     x = x[alive] */
+    /*     v = v[alive] */
+    /* self.N_alive = alive.sum() */
 }
 
 void test_species()
@@ -99,4 +121,3 @@ void test_species()
     cout << s.q << endl;
     cout << s.v.size() << endl;
 }
-

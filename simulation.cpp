@@ -11,7 +11,7 @@ void Simulation::iteration(int i)
     //periodic for now
     
     //grid.save_field_values
-    grid.apply_bc(i);
+    /* grid.apply_bc(i); */
     for (Species species: list_species)
     {
         species.periodic_interpolate_fields(grid);
@@ -24,7 +24,7 @@ void Simulation::iteration(int i)
     {
         species.position_push();
         /* species.save_particle_values(i); */
-        species.apply_bc();
+        species.periodic_apply_bc(grid);
     }
 }
 

@@ -11,6 +11,7 @@ class Species
         float q;
         float m;
         int N;
+        int N_alive;
         float scaling;
         float eff_q;
         float eff_m;
@@ -24,6 +25,8 @@ class Species
     void position_push();
     void aperiodic_interpolate_fields(Grid g);
     void periodic_interpolate_fields(Grid g);
+    void periodic_apply_bc(Grid g);
+    void aperiodic_apply_bc(Grid g);
 };
 
 #endif /* SPECIES_H */

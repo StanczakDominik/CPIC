@@ -1,8 +1,8 @@
 #include <iostream>
 #include "grid.hpp"
 #include "species.hpp"
+/* #include "igl/slice.h" */
 #include <Eigen/Dense>
-#include <Eigen/Geometry>
 using namespace std;
 using namespace Eigen;
 
@@ -64,15 +64,9 @@ void demonstrate_cross_rowwise()
    cout << am.rowwise().cross(bm.row(0)) << endl;
 }
 
-void fancy_indexing()
-{
-   ArrayXd a(5);
-   a << 0, 1, 2, 3, 4;
-   ArrayXi indices(3);
-   indices << 1, 2, 3;
-}
-
 int main()
 {
-   fancy_indexing();
+   cout << "AM A FUNCTION";
+   ArrayXd a = ArrayXd::LinSpaced(21, 0, 10);
+   cout << a << endl;
 }
