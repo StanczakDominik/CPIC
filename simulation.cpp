@@ -3,8 +3,26 @@
 #include "species.hpp"
 #include "grid.hpp"
 #include "simulation.hpp"
+#include "temporal.hpp"
+#include <time.h>
 using namespace std;
 using namespace Eigen;
+
+double Simulation::run()
+{
+    struct timespec start, finish;
+    double elapsed;
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i= 0; i < temporal.NT; i++)
+    {
+        iteration(i);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    return elapsed;
+}
 
 void Simulation::iteration(int i)
 {

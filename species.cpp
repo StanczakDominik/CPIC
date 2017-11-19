@@ -104,12 +104,6 @@ void Species::aperiodic_apply_bc(Grid g)
         N_alive = N_alive_new;
         x = new_x;
     }
-
-    /* alive = (0 <= x) & (x < g.L) */
-    /* if N_alive: */
-    /*     x = x[alive] */
-    /*     v = v[alive] */
-    /* self.N_alive = alive.sum() */
 }
 
 void test_species()

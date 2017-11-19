@@ -1,8 +1,8 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 #include <Eigen/Dense>
-#include "temporal.hpp"
 #include <vector>
+#include "temporal.hpp"
 using namespace std;
 using namespace Eigen;
 
@@ -11,7 +11,7 @@ class Species;
 class Simulation
 {
     public:
-        Temporal timing;
+        Temporal temporal;
 
         Grid grid;
         std::vector<Species> list_species;
@@ -20,7 +20,7 @@ class Simulation
         string title;
 
     void iteration(int i);
-    void run();
+    double run();
 };
 
 #endif /* SIMULATION_H */
