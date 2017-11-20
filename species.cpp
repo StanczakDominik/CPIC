@@ -26,6 +26,22 @@ void Species::position_push()
     x += v.col(0) * dt;
 }
 
+void Species::distribute_uniformly(Grid g, float shift, float start_moat, float end_moat)
+{
+    x = ArrayXd::LinSpaced(N,
+            start_moat + g.L / N * 1e-10,
+            g.L-end_moat); // TODO check endpoint, python has false
+    x += shift * N / g.L / 10.0;
+    periodic_apply_bc(g);
+}
+
+void Species::sinusoidal_position_perturbation(float amplitude, int mode, Grid g)
+{
+    x += amplitude * cos(2*mode*M_PI*x / g.L);
+    periodic_apply_bc(g);
+}
+
+
 
 double Species::velocity_push()
 {

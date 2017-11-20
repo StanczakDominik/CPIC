@@ -17,7 +17,9 @@ class Simulation
         std::vector<Species> list_species;
         
         string filename;
-        string title;
+        /* string title; */
+    Simulation(Temporal temporal, Grid grid, string filename, Species species);
+    Simulation(Temporal temporal, Grid grid, string filename, Species species, Species species2);
 
     void iteration(int i);
     double run();

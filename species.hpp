@@ -27,6 +27,8 @@ class Species
     void periodic_interpolate_fields(Grid g);
     void periodic_apply_bc(Grid g);
     void aperiodic_apply_bc(Grid g);
+    void distribute_uniformly(Grid g, float shift, float start_moat, float end_moat);
+    void sinusoidal_position_perturbation(float amplitude, int mode, Grid g);
 };
 
 #endif /* SPECIES_H */

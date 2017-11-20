@@ -1,10 +1,13 @@
 #include <iostream>
 #include "grid.hpp"
 #include "species.hpp"
+#include "simulation.hpp"
+#include "temporal.hpp"
 /* #include "igl/slice.h" */
 #include <Eigen/Dense>
 using namespace std;
 using namespace Eigen;
+#include <vector>
 
 void test_grid()
 {
@@ -66,7 +69,11 @@ void demonstrate_cross_rowwise()
 
 int main()
 {
-   cout << "AM A FUNCTION";
-   ArrayXd a = ArrayXd::LinSpaced(21, 0, 10);
-   cout << a << endl;
+   Species s(1000, 1, 1, 1);
+   Grid g(32, 1, 1, 1);
+   s.distribute_uniformly(g, 1e-10, 0, 0);
+   Temporal temp(1000, 1.0); 
+   string file = "filename";
+   Simulation sim(temp, g, file, s);
+   
 }

@@ -8,6 +8,23 @@
 using namespace std;
 using namespace Eigen;
 
+Simulation::Simulation(Temporal _temporal, Grid _grid, string _filename, Species species)
+{
+    temporal = _temporal;
+    grid = _grid;
+    list_species = std::vector<Species>();
+    list_species.push_back(species);
+    filename = _filename;
+}
+Simulation::Simulation(Temporal _temporal, Grid _grid, string _filename, Species species, Species species2)
+{
+    temporal = _temporal;
+    grid = _grid;
+    list_species = std::vector<Species>();
+    list_species.push_back(species);
+    list_species.push_back(species2);
+    filename = _filename;
+}
 double Simulation::run()
 {
     struct timespec start, finish;
