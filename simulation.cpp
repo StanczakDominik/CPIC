@@ -8,7 +8,7 @@
 using namespace std;
 using namespace Eigen;
 
-Simulation::Simulation(Temporal _temporal, Grid _grid, string _filename, Species species)
+Simulation::Simulation(Temporal& _temporal, Grid& _grid, string _filename, Species &species)
 {
     temporal = _temporal;
     grid = _grid;
@@ -16,7 +16,8 @@ Simulation::Simulation(Temporal _temporal, Grid _grid, string _filename, Species
     list_species.push_back(species);
     filename = _filename;
 }
-Simulation::Simulation(Temporal _temporal, Grid _grid, string _filename, Species species, Species species2)
+
+Simulation::Simulation(Temporal& _temporal, Grid &_grid, string _filename, Species& species, Species& species2)
 {
     temporal = _temporal;
     grid = _grid;
@@ -51,8 +52,8 @@ void Simulation::iteration(int i)
     {
         species.periodic_interpolate_fields(grid);
         species.velocity_push();
-        grid.gather_charge(species);
-        grid.gather_current(species);
+        species.gather_charge(grid);
+        species.gather_current(grid);
     }
     grid.solve();
     for (Species species: list_species)

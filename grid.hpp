@@ -1,11 +1,9 @@
-#include <Eigen/Dense>
-#include "species.hpp"
 #ifndef GRID_H
 #define GRID_H
+#include <Eigen/Dense>
 using namespace std;
 using namespace Eigen;
 
-class Species;
 class Grid
 {
     public:
@@ -25,11 +23,7 @@ class Grid
     Grid(int _NG, float _L, float _c, float _epsilon_0);
     void initial_solve(bool neutralize);
     void solve();
-    ArrayXd bincount(ArrayXd cell_numbers, ArrayXd weights, int minlength);
-    void gather_charge(Species s);
-    void gather_charge_periodic(Species s);
-    void gather_current(Species s);
-    void gather_current_periodic(Species s);
+    ArrayXd bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength);
 };
 
 #endif /* GRID_H */

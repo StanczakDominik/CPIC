@@ -1,6 +1,6 @@
-#include <Eigen/Dense>
 #ifndef TEMPORAL_H
 #define TEMPORAL_H
+#include <Eigen/Dense>
 using namespace std;
 using namespace Eigen;
 
