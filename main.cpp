@@ -69,10 +69,15 @@ void demonstrate_cross_rowwise()
 
 int main()
 {
+   cout << "Initializing variables" << endl;
    Species s(1000, 1, 1, 1);
    Grid g(32, 1, 1, 1);
    s.distribute_uniformly(g, 1e-10, 0, 0);
    Temporal temp(1000, 1.0); 
    string file = "filename";
-   /* Simulation sim(temp, g, file, s); */
+   Simulation sim(temp, g, file, s);
+   cout << "Running sim" << endl;
+   double runtime = sim.run();
+   cout << "Running sim took " << runtime << " seconds" << endl;
+   cout << g.charge_density;
 }
