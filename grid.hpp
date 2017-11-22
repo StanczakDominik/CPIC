@@ -25,6 +25,7 @@ class Grid
     void initial_solve(bool neutralize);
     void solve();
     ArrayXd bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength);
+    void aperiodic_apply_bc(int iteration);
 };
 
 #endif /* GRID_H */
