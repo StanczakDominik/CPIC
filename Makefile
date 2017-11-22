@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-I. -Wall -Werror -std=c++11 -lfftw3
+CFLAGS=-I. -Wall -Werror -std=c++11 -lfftw3 -g3
 
 all: main
 main: main.o grid.o species.o simulation.o temporal.o
@@ -7,13 +7,13 @@ main: main.o grid.o species.o simulation.o temporal.o
 
 main.o: main.cpp grid.o species.o simulation.o temporal.o
 	$(CC) -c main.cpp $(CFLAGS)
-grid.o: temporal.o
-	$(CC) -c grid.cpp $(CFLAGS)
-species.o: temporal.o
-	$(CC) -c species.cpp $(CFLAGS)
-simulation.o: species.o grid.o temporal.o
+simulation.o: simulation.cpp species.o grid.o temporal.o
 	$(CC) -c simulation.cpp $(CFLAGS)
-temporal.o: 
+species.o: species.cpp temporal.o grid.o
+	$(CC) -c species.cpp $(CFLAGS)
+grid.o: grid.cpp temporal.o
+	$(CC) -c grid.cpp $(CFLAGS)
+temporal.o: temporal.cpp
 	$(CC) -c temporal.cpp $(CFLAGS)
 
 run: all

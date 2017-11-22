@@ -13,6 +13,7 @@ class Temporal
 
         ArrayXd t;
     Temporal(int _NT, float _T);
+    Temporal(Temporal &_temporal);
 };
 
 #endif /* TEMPORAL_H */

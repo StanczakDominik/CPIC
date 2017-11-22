@@ -24,7 +24,7 @@ void test_charge_density()
 {
     Grid g = Grid(10, 1, 1, 1);
     Species s = Species(10, 1, 1, 1);
-    g.gather_charge(s);
+    s.gather_charge(g);
     cout << g.charge_density << endl;
 }
 
@@ -74,6 +74,5 @@ int main()
    s.distribute_uniformly(g, 1e-10, 0, 0);
    Temporal temp(1000, 1.0); 
    string file = "filename";
-   Simulation sim(temp, g, file, s);
-   
+   /* Simulation sim(temp, g, file, s); */
 }
