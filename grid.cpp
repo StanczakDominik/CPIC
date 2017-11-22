@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <Eigen/Core>
 #include <eigen3/unsupported/Eigen/FFT>
 #include <Eigen/Dense>
 #include "grid.hpp"
@@ -50,6 +51,28 @@ typedef Array<bool,Dynamic,1> ArrayXb;
 
 void Grid::initial_solve(bool neutralize)
 {
+    size_t dim_x = charge_density.size();
+    Eigen::FFT<double> fft;
+    Eigen::ArrayXcd rho_F;
+    Eigen::ArrayXcd out_final;
+    out.setZero(dim_x);
+    fft.fwd(rho_F, charge_density);
+    ArrayXcd k(dim_x);
+    k.setZero(dim_x);
+    uint N = floor(dim_x/2) + 1; 
+    for (uint i = 0; i < N; i++)
+    {
+        k.imag()(i) = i;
+        k.imag()(i+N) = i - N;
+    }
+
+    k.imag() *= 2 * M_PI / (dim_x * dx);
+    rho_F /= k;
+    fft.inv(rho_F, out_final);
+    charge_density = out_final.real();
+
+    /* self.k = 2 * np.pi * fft.fftfreq(self.NG, self.dx) */
+    /* self.k[0] = 0.0001 */
     /* rho_F = fft(rho); */
     /* if(neutralize) */
     /* { */
