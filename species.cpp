@@ -7,18 +7,20 @@ using namespace std;
 using namespace Eigen;
 
 Species::Species(int _N, float _q, float _m, float _scaling)
+    : q(_q), m(_m), N(_N), N_alive(_N), scaling(_scaling), eff_q(q*scaling),
+    eff_m(m*scaling), x(N), v(N, 3), E(N, 3), B(N, 3)
 {
     // compute effective charges and masses of macroparticles
-    N = _N;
-    q = _q;
-    m = _m;
-    N_alive = N;
-    scaling = _scaling;
-    eff_q = q * scaling;
-    eff_m = m * scaling;
-    // allocate position and velocity arrays
-    x = ArrayXd(N);
-    v = ArrayX3d(N, 3);
+    /* N = _N; */
+    /* q = _q; */
+    /* m = _m; */
+    /* N_alive = N; */
+    /* scaling = _scaling; */
+    /* eff_q = q * scaling; */
+    /* eff_m = m * scaling; */
+    /* // allocate position and velocity arrays */
+    /* x = ArrayXd(N); */
+    /* v = ArrayX3d(N, 3); */
 }
 
 void Species::position_push()
@@ -71,13 +73,12 @@ double Species::velocity_push()
 
 void Species::periodic_interpolate_fields(Grid &g)
 {
-    ArrayXd logical_coordinates = floor(x / g.dx);
-    ArrayXd right_fractions  = (x / g.dx) - logical_coordinates;
-
     for (int i =0; i < N_alive; i ++)
     {
-        E(i) = (1 - right_fractions(i)) * g.electric_field(i+1) + right_fractions(i) * g.electric_field((i+1) % g.NG + 1);
-        B(i) = (1 - right_fractions(i)) * g.magnetic_field(i+1) + right_fractions(i) * g.magnetic_field((i+1) % g.NG + 1);
+        int on_grid = (x(i) / g.dx);
+        double right_fraction = (x(i) / g.dx) - on_grid;
+        E.row(i) = (1 - right_fraction) * g.electric_field.row(on_grid+1) + right_fraction * g.electric_field.row((on_grid+1) % g.NG + 1);
+        B.row(i) = (1 - right_fraction) * g.magnetic_field.row(on_grid+1) + right_fraction * g.magnetic_field.row((on_grid+1) % g.NG + 1);
     }
 }
 

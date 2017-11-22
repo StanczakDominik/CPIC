@@ -12,6 +12,8 @@ Temporal::Temporal(int _NT, float _T)
 }
 
 Temporal::Temporal(Temporal &_temporal)
+    : T(_temporal.T), NT(_temporal.NT)
 {
-    Temporal(_temporal.NT, _temporal.T);
+    t = _temporal.t;
+    dt = _temporal.dt;
 }

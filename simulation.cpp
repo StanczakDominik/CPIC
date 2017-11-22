@@ -28,6 +28,8 @@ double Simulation::run()
     struct timespec start, finish;
     double elapsed;
 
+    grid.initial_solve((bool)0);
+
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i= 0; i < temporal.NT; i++)
     {

@@ -22,14 +22,10 @@ ArrayXd PythonLinSpaced(int NG, float x_min, float x_max)
 }
 
 
-Grid::Grid(int _NG, float _L, float _c, float _epsilon_0)
+Grid::Grid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal)
+    : c(_c), epsilon_0(_epsilon_0), NG(_NG), L(_L), charge_density(NG+1), current_density_x(NG+3),
+    current_density_yz(NG+4, 2), electric_field(NG+2, 3), magnetic_field(NG+2, 3), temporal(_temporal)
 {
-    // compute effective charges and masses of macroparticles
-    L = _L;
-    NG = _NG;
-    c = _c;
-    epsilon_0 = _epsilon_0;
-    // allocate position and velocity arrays
     x = PythonLinSpaced(NG, 0, L);
     dx = x(1) - x(0);
 }
@@ -51,23 +47,41 @@ typedef Array<bool,Dynamic,1> ArrayXb;
 
 void Grid::initial_solve(bool neutralize)
 {
-    size_t dim_x = charge_density.size();
+    int dim_x = charge_density.size();
     Eigen::FFT<double> fft;
-    Eigen::ArrayXcd rho_F;
-    Eigen::ArrayXcd out_final;
-    out.setZero(dim_x);
-    fft.fwd(rho_F, charge_density);
-    ArrayXcd k(dim_x);
-    k.setZero(dim_x);
-    uint N = floor(dim_x/2) + 1; 
-    for (uint i = 0; i < N; i++)
+    Eigen::VectorXcd rho_F(dim_x);
+    Eigen::VectorXcd out_final(dim_x);
+    rho_F.setZero(dim_x);
+    /* cout << rho_F << endl; */
+    fft.fwd(rho_F, charge_density.matrix());
+
+    if (neutralize)
     {
-        k.imag()(i) = i;
-        k.imag()(i+N) = i - N;
+        rho_F(0) = 0;
     }
 
-    k.imag() *= 2 * M_PI / (dim_x * dx);
-    rho_F /= k;
+    VectorXcd k(dim_x);
+    k.setZero(dim_x);
+    int N_fft = floor((dim_x-1)/2) + 1; 
+    for (int i = 0; i < N_fft; i++)
+    {
+        k.imag()(i) = float(i / (float)dim_x);
+        if ((i + N_fft < dim_x))
+        {
+            if ( N_fft % 2 == 0)
+            {
+                k.imag()(i+N_fft) = float((i - N_fft)/(float)dim_x);
+            }
+            else
+            {
+                k.imag()(i+N_fft) = float((i - N_fft + 1)/(float)dim_x);
+            }
+        }
+    }
+
+    k.imag() *= -2 * M_PI / (dim_x * dx);
+    /* cout << k << endl; */
+    rho_F = rho_F.array() / k.array();
     fft.inv(rho_F, out_final);
     charge_density = out_final.real();
 
@@ -85,7 +99,7 @@ void Grid::initial_solve(bool neutralize)
 void Grid::solve()
 {
     // update longitudinal field
-    electric_field.col(0) -= dt / epsilon_0 * current_density_x.head(NG+2);
+    electric_field.col(0) -= temporal.dt / epsilon_0 * current_density_x.head(NG+2);
 
     // update transversal field
     ArrayXd Fplus = 0.5 * (electric_field.col(1) + c * magnetic_field.col(2));
@@ -94,11 +108,11 @@ void Grid::solve()
     ArrayXd Gminus = 0.5 * (electric_field.col(2) - c * magnetic_field.col(1));
 
     // propagate forwards
-    Fplus.tail(NG-1) = Fplus.head(NG-1) - 0.5 * dt * current_density_yz.block(2, 0, NG-1, 1) / epsilon_0;
-    Gplus.tail(NG-1) = Gplus.head(NG-1) - 0.5 * dt * current_density_yz.block(2, 1, NG-1, 1) / epsilon_0;
+    Fplus.tail(NG-1) = Fplus.head(NG-1) - 0.5 * temporal.dt * current_density_yz.block(2, 0, NG-1, 1) / epsilon_0;
+    Gplus.tail(NG-1) = Gplus.head(NG-1) - 0.5 * temporal.dt * current_density_yz.block(2, 1, NG-1, 1) / epsilon_0;
     // propagate backwards
-    Fminus.head(NG-1) = Fminus.tail(NG-1) - 0.5 * dt * current_density_yz.block(2, 0, NG-1, 1) / epsilon_0;
-    Gminus.head(NG-1) = Gminus.tail(NG-1) - 0.5 * dt * current_density_yz.block(2, 1, NG-1, 1) / epsilon_0;
+    Fminus.head(NG-1) = Fminus.tail(NG-1) - 0.5 * temporal.dt * current_density_yz.block(2, 0, NG-1, 1) / epsilon_0;
+    Gminus.head(NG-1) = Gminus.tail(NG-1) - 0.5 * temporal.dt * current_density_yz.block(2, 1, NG-1, 1) / epsilon_0;
 
     electric_field.col(1) = Fplus + Fminus;
     electric_field.col(2) = Gplus + Gminus;
