@@ -229,13 +229,21 @@ void Species::gather_current_computation(Grid &g)
 void Species::gather_current(Grid &g)
 {
     gather_current_computation(g);
-    // TODO FILL BCs
+    g.current_density_yz.block(g.current_density_x.rows() - 4,0 , 2, 2) += g.current_density_yz.topRows(2);
+    g.current_density_yz.block(2, 0 , 2, 2) += g.current_density_yz.bottomRows(2);
+    g.current_density_x(g.current_density_x.rows() -3) += g.current_density_x(0); // TODO check from end
+    g.current_density_x(0) = 0;
+    g.current_density_x.segment(2, 1) += g.current_density_x.tail(2);
+    g.current_density_x.tail(2) = 0;
 }
 
 void NonPeriodicSpecies::gather_current(Grid &g)
 {
     gather_current_computation(g);
-    // TODO FILL BCs
+    g.current_density_yz.topRows(2) = 0;
+    g.current_density_yz.bottomRows(2) = 0;
+    g.current_density_x(0) = 0;
+    g.current_density_x.tail(2) = 0;
 
 }
 
