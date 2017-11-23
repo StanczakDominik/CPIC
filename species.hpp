@@ -23,16 +23,23 @@ class Species
     Species(int N, float q, float m, float scaling);
     double velocity_push();
     void position_push();
-    void aperiodic_interpolate_fields(Grid &g);
-    void periodic_interpolate_fields(Grid &g);
-    void periodic_apply_bc(Grid &g);
-    void aperiodic_apply_bc(Grid &g);
+    void interpolate_fields(Grid &g);
+    void apply_bc(Grid &g);
     void distribute_uniformly(Grid &g, float shift, float start_moat, float end_moat);
     void sinusoidal_position_perturbation(float amplitude, int mode, Grid &g);
     void gather_charge(Grid &g);
-    void gather_charge_periodic(Grid &g);
+    void gather_charge_computation(Grid &g);
     void gather_current(Grid &g);
-    void gather_current_periodic(Grid &g);
+    void gather_current_computation(Grid &g);
 };
+
+class NonPeriodicSpecies : public Species
+{
+    void interpolate_fields(Grid &g);
+    void apply_bc(Grid &g);
+    void gather_charge(Grid &g);
+    void gather_current(Grid &g);
+};
+
 
 #endif /* SPECIES_H */

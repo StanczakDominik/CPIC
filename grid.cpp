@@ -120,7 +120,13 @@ void Grid::solve()
     magnetic_field.col(2) = (Fplus - Fminus)/c;
 }
 
-void Grid::aperiodic_apply_bc(int iteration)
+void Grid::apply_bc(int iteration)
+{
+    return;
+}
+
+
+void NonPeriodicGrid::apply_bc(int iteration)
 {
     cout << "TODO"; // TODO   
 }
