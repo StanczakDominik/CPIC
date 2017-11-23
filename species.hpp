@@ -1,9 +1,10 @@
 #ifndef SPECIES_H
 #define SPECIES_H
 #include <Eigen/Dense>
-#include "grid.hpp"
 using namespace std;
 using namespace Eigen;
+
+class Grid;
 
 class Species
 {
@@ -35,10 +36,12 @@ class Species
 
 class NonPeriodicSpecies : public Species
 {
-    void interpolate_fields(Grid &g);
-    void apply_bc(Grid &g);
-    void gather_charge(Grid &g);
-    void gather_current(Grid &g);
+    public:
+        using Species::Species;
+        void interpolate_fields(Grid &g);
+        void apply_bc(Grid &g);
+        void gather_charge(Grid &g);
+        void gather_current(Grid &g);
 };
 
 

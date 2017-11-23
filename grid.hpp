@@ -2,6 +2,8 @@
 #define GRID_H
 #include <Eigen/Dense>
 #include "temporal.hpp"
+#include "species.hpp"
+
 using namespace std;
 using namespace Eigen;
 
@@ -26,11 +28,15 @@ class Grid
     void solve();
     ArrayXd bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength);
     void apply_bc(int iteration);
+    void apply_particle_bc(Species &s);
 };
 
 class NonPeriodicGrid : public Grid
 {
-    void apply_bc(int iteration);
+    public:
+        using Grid::Grid;
+        void apply_bc(int iteration);
+        void apply_particle_bc(Species &s);
 };
 
 #endif /* GRID_H */

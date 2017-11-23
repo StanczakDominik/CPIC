@@ -34,13 +34,13 @@ void Species::distribute_uniformly(Grid &g, float shift, float start_moat, float
             start_moat + g.L / N * 1e-10,
             g.L-end_moat); // TODO check endpoint, python has false
     x += shift * N / g.L / 10.0;
-    apply_bc(g);
+    g.apply_particle_bc(*this);
 }
 
 void Species::sinusoidal_position_perturbation(float amplitude, int mode, Grid &g)
 {
     x += amplitude * cos(2*mode*M_PI*x / g.L);
-    apply_bc(g);
+    g.apply_particle_bc(*this);
 }
 
 
@@ -83,45 +83,6 @@ void Species::interpolate_fields(Grid &g)
 }
 
 
-void NonPeriodicSpecies::interpolate_fields(Grid &g)
-{
-    for (int i =0; i < N_alive; i ++)
-    {
-        int on_grid = (x(i) / g.dx);
-        double right_fraction = (x(i) / g.dx) - on_grid;
-        E.row(i) = (1 - right_fraction) * g.electric_field.row(on_grid+1) + right_fraction * g.electric_field.row(on_grid+2);
-        B.row(i) = (1 - right_fraction) * g.magnetic_field.row(on_grid+1) + right_fraction * g.magnetic_field.row(on_grid+2);
-    }
-}
-
-void Species::apply_bc(Grid &g)
-{
-    x = x - (g.L * (x/g.L).floor());
-}
-
-void NonPeriodicSpecies::apply_bc(Grid &g)
-{
-    ArrayXi indices = ((0 < x) * (x < g.L)).cast<int>();
-    int N_alive_new = indices.sum();
-    if (N_alive != N_alive_new)
-    {
-        ArrayXd new_x(N_alive_new);
-        ArrayX3d new_v(N_alive_new, 3);
-        int j = 0;
-        for (int i = 0;  i < N_alive; i++)
-        {
-            if (indices(i))
-            {
-                new_x(j) = x(i);
-                new_v.row(j) = v.row(i);
-                j++;
-            }
-        }
-        N_alive = N_alive_new;
-        x = new_x;
-    }
-}
-
 // CHARGE AND CURRENT DEPOSITION
 
 void Species::gather_charge_computation(Grid &g)
@@ -141,11 +102,6 @@ void Species::gather_charge(Grid &g)
 {
     gather_charge_computation(g);
     g.charge_density.head(1) += g.charge_density.tail(1);
-}
-
-void NonPeriodicSpecies::gather_charge(Grid &g)
-{
-    gather_charge_computation(g);
 }
 
 typedef Array<bool,Dynamic,1> ArrayXb;
@@ -233,9 +189,26 @@ void Species::gather_current(Grid &g)
     g.current_density_yz.block(2, 0 , 2, 2) += g.current_density_yz.bottomRows(2);
     g.current_density_x(g.current_density_x.rows() -3) += g.current_density_x(0); // TODO check from end
     g.current_density_x(0) = 0;
-    g.current_density_x.segment(2, 1) += g.current_density_x.tail(2);
+    g.current_density_x.segment(1, 2) += g.current_density_x.tail(2);
     g.current_density_x.tail(2) = 0;
 }
+
+void NonPeriodicSpecies::interpolate_fields(Grid &g)
+{
+    for (int i =0; i < N_alive; i ++)
+    {
+        int on_grid = (x(i) / g.dx);
+        double right_fraction = (x(i) / g.dx) - on_grid;
+        E.row(i) = (1 - right_fraction) * g.electric_field.row(on_grid+1) + right_fraction * g.electric_field.row(on_grid+2);
+        B.row(i) = (1 - right_fraction) * g.magnetic_field.row(on_grid+1) + right_fraction * g.magnetic_field.row(on_grid+2);
+    }
+}
+
+void NonPeriodicSpecies::gather_charge(Grid &g)
+{
+    gather_charge_computation(g);
+}
+
 
 void NonPeriodicSpecies::gather_current(Grid &g)
 {

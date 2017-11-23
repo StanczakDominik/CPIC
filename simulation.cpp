@@ -57,7 +57,7 @@ void Simulation::iteration(int i)
     {
         species.position_push();
         /* species.save_particle_values(i); */
-        species.apply_bc(grid);
+        grid.apply_particle_bc(species);
     }
 }
 
