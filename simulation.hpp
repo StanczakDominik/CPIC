@@ -5,6 +5,7 @@
 #include "grid.hpp"
 #include "species.hpp"
 #include "temporal.hpp"
+#include "H5Cpp.h"
 using namespace std;
 using namespace Eigen;
 

@@ -4,6 +4,7 @@
 #include <eigen3/unsupported/Eigen/FFT>
 #include <Eigen/Dense>
 #include "grid.hpp"
+#include "H5Cpp.h"
 
 using namespace std;
 using namespace Eigen;
@@ -176,7 +177,8 @@ void NonPeriodicGrid::apply_particle_bc(Species &s)
         s.N_alive = N_alive_new;
         s.x = new_x;
         s.v = new_v;
-        // TODO RESIZE FIELDS
+        s.E.resize(N_alive_new, 3);
+        s.B.resize(N_alive_new, 3);
     }
 }
 
