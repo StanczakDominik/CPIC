@@ -43,6 +43,7 @@ double Simulation::run()
 
 void Simulation::iteration(int i)
 {
+    (void)i; // TODO remove once saving field values
     //grid.save_field_values
     /* grid.apply_bc(i); */
     for (Species species: list_species)

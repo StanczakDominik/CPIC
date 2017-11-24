@@ -119,15 +119,35 @@ void Grid::solve()
     magnetic_field.col(2) = (Fplus - Fminus)/c;
 }
 
-void Grid::apply_bc(int iteration)
+void Grid::apply_bc(float t)
 {
-    return;
+    (void)t;
+}
+
+NonPeriodicGrid::NonPeriodicGrid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal,
+        float _laser_wavelength, float _laser_intensity, float _envelope_center_t, float _envelope_width,
+        float _envelope_power)
+    : Grid(_NG, _L, _c, _epsilon_0, _temporal),
+    laser_omega(2*M_PI*_c/_laser_wavelength),
+    laser_amplitude(sqrt(_laser_intensity/(epsilon_0*c))),
+    envelope_center_t(_envelope_center_t), envelope_width(_envelope_width),
+    envelope_power(_envelope_power),
+    _taui(0.5 / pow(log(2), 1./envelope_power) * envelope_center_t),
+    _tau(pow(2, 1./envelope_power) * _taui),
+    _t_0(_tau * pow(10, 1./envelope_power))
+{
+
 }
 
 
-void NonPeriodicGrid::apply_bc(int iteration)
+void NonPeriodicGrid::apply_bc(float t)
 {
-    cout << "TODO"; // TODO   
+    // skipping laser phase;
+    double wave = laser_amplitude * sin(laser_omega * t); 
+    double envelope = exp(-pow((t - _t_0) / _tau, envelope_power));
+    double return_value = wave * envelope;
+    electric_field(0,1) = return_value;
+    magnetic_field(0,2) = return_value / c;
 }
 
 void Grid::apply_particle_bc(Species &s)
@@ -159,5 +179,6 @@ void NonPeriodicGrid::apply_particle_bc(Species &s)
         // TODO RESIZE FIELDS
     }
 }
+
 
 
