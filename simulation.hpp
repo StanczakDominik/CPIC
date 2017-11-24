@@ -16,15 +16,15 @@ class Simulation
         Temporal temporal;
 
         Grid grid;
-        std::vector<Species> list_species;
+        std::vector<Species *> list_species;
         
         H5std_string filename;
         /* string title; */
-    Simulation(Temporal &temporal, Grid &grid, string filename, Species &species);
-    Simulation(Temporal &temporal, Grid &grid, string filename, Species &species, Species &species2);
+    Simulation(Temporal &temporal, Grid &grid, string filename, Species *species);
+    Simulation(Temporal &temporal, Grid &grid, string filename, Species *species, Species *species2);
 
-    void iteration(int i);
-    double run();
+    virtual void iteration(int i);
+    virtual double run();
     void save();
 };
 

@@ -151,36 +151,5 @@ void NonPeriodicGrid::apply_bc(float t)
     magnetic_field(0,2) = return_value / c;
 }
 
-void Grid::apply_particle_bc(Species &s)
-{
-    s.x = s.x - (L * (s.x/L).floor());
-}
-
-void NonPeriodicGrid::apply_particle_bc(Species &s)
-{
-    ArrayXi indices = ((0 < s.x) * (s.x < L)).cast<int>();
-    int N_alive_new = indices.sum();
-    if (s.N_alive != N_alive_new)
-    {
-        ArrayXd new_x(N_alive_new);
-        ArrayX3d new_v(N_alive_new, 3);
-        int j = 0;
-        for (int i = 0;  i < s.N_alive; i++)
-        {
-            if (indices(i))
-            {
-                new_x(j) = s.x(i);
-                new_v.row(j) = s.v.row(i);
-                j++;
-            }
-        }
-        s.N_alive = N_alive_new;
-        s.x = new_x;
-        s.v = new_v;
-        s.E.resize(N_alive_new, 3);
-        s.B.resize(N_alive_new, 3);
-    }
-}
-
 
 

@@ -10,17 +10,17 @@ using namespace std;
 using namespace Eigen;
 using namespace H5;
 
-Simulation::Simulation(Temporal& _temporal, Grid& _grid, string _filename, Species &species)
+Simulation::Simulation(Temporal& _temporal, Grid& _grid, string _filename, Species* species)
     : temporal(_temporal), grid(_grid), filename(_filename)
 {
-    list_species = std::vector<Species>();
+    list_species = std::vector<Species *>();
     list_species.push_back(species);
 }
 
-Simulation::Simulation(Temporal& _temporal, Grid &_grid, string _filename, Species& species, Species& species2)
+Simulation::Simulation(Temporal& _temporal, Grid &_grid, string _filename, Species* species, Species* species2)
     : temporal(_temporal), grid(_grid), filename(_filename)
 {
-    list_species = std::vector<Species>();
+    list_species = std::vector<Species *>();
     list_species.push_back(species);
     list_species.push_back(species2);
 }
@@ -46,18 +46,18 @@ double Simulation::run()
 void Simulation::iteration(int i)
 {
     grid.apply_bc(temporal.dt*i);
-    for (Species species: list_species)
+    for (int i = 0; i<(int)list_species.size(); i++)
     {
-        species.interpolate_fields(grid);
-        species.velocity_push();
-        species.gather_charge(grid);
-        species.gather_current(grid);
+        list_species[i]->interpolate_fields(grid);
+        list_species[i]->velocity_push();
+        list_species[i]->gather_charge(grid);
+        list_species[i]->gather_current(grid);
     }
     grid.solve();
-    for (Species species: list_species)
+    for (int i = 0; i<(int)list_species.size(); i++)
     {
-        species.position_push();
-        grid.apply_particle_bc(species);
+        list_species[i]->position_push();
+        list_species[i]->apply_particle_bc(grid);
     }
 }
 

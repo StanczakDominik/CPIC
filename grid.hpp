@@ -2,7 +2,6 @@
 #define GRID_H
 #include <Eigen/Dense>
 #include "temporal.hpp"
-#include "species.hpp"
 
 using namespace std;
 using namespace Eigen;
@@ -28,7 +27,6 @@ class Grid
     void solve();
     ArrayXd bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength);
     void apply_bc(float t);
-    void apply_particle_bc(Species &s);
 };
 
 class NonPeriodicGrid : public Grid
@@ -43,7 +41,6 @@ class NonPeriodicGrid : public Grid
             float _laser_wavelength, float _laser_intensity, float _envelope_center_t, float _envelope_width,
             float _envelope_power);
         void apply_bc(float t);
-        void apply_particle_bc(Species &s);
     private:
         float _taui;
         float _tau;

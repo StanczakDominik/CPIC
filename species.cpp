@@ -34,13 +34,13 @@ void Species::distribute_uniformly(Grid &g, float shift, float start_moat, float
             start_moat + g.L / N * 1e-10,
             g.L-end_moat); // TODO check endpoint, python has false
     x += shift * N / g.L / 10.0;
-    g.apply_particle_bc(*this);
+    apply_particle_bc(g);
 }
 
 void Species::sinusoidal_position_perturbation(float amplitude, int mode, Grid &g)
 {
     x += amplitude * cos(2*mode*M_PI*x / g.L);
-    g.apply_particle_bc(*this);
+    apply_particle_bc(g);
 }
 
 
@@ -111,7 +111,6 @@ void Species::gather_current_computation(Grid &g)
     float epsilon = g.dx * 1e-2;
     for (int i=0; i < N_alive; i++)
     {
-        cout << "running for particle " << i << " out of " << N_alive << endl;
         float x_velocity = v(i,0);
         bool active = v.row(i).any();
         float time_left = dt;
@@ -219,5 +218,36 @@ void NonPeriodicSpecies::gather_current(Grid &g)
     g.current_density_x(0) = 0;
     g.current_density_x.tail(2) = 0;
 
+}
+
+void Species::apply_particle_bc(Grid &g)
+{
+    x = x - (g.L * (x/g.L).floor());
+}
+
+void NonPeriodicSpecies::apply_particle_bc(Grid &g)
+{
+    ArrayXi indices = ((0 < x) * (x < g.L)).cast<int>();
+    int N_alive_new = indices.sum();
+    if (N_alive != N_alive_new)
+    {
+        ArrayXd new_x(N_alive_new);
+        ArrayX3d new_v(N_alive_new, 3);
+        int j = 0;
+        for (int i = 0;  i < N_alive; i++)
+        {
+            if (indices(i))
+            {
+                new_x(j) = x(i);
+                new_v.row(j) = v.row(i);
+                j++;
+            }
+        }
+        N_alive = N_alive_new;
+        x = new_x;
+        v = new_v;
+        E.resize(N_alive_new, 3);
+        B.resize(N_alive_new, 3);
+    }
 }
 
