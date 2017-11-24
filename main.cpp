@@ -13,9 +13,11 @@ using namespace Eigen;
 int main()
 {
    cout << "Initializing variables" << endl;
-   Temporal temp(1000, 1.0); 
-   NonPeriodicSpecies s(1000, 1, 1, 1);
-   NonPeriodicGrid g(32, 1, 1, 1, temp, 1, 1, 0.5, 0.25, 2);
+   Temporal temp(2, 1.0); 
+   Species s(100, 1, 1, 1);
+   s.v = ArrayX3d::Constant(s.N_alive, 3, 0.1);
+   /* NonPeriodicGrid g(32, 1, 1, 1, temp, 1, 1, 0.5, 0.25, 2); */
+   Grid g(32, 1, 1, 1, temp);
    s.distribute_uniformly(g, 1e-10, 0, 0);
    s.sinusoidal_position_perturbation(1e-3, 1, g);
    g.apply_particle_bc(s);
