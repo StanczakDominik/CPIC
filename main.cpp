@@ -7,23 +7,8 @@
 using namespace std;
 using namespace Eigen;
 #include <vector>
+#include "H5Cpp.h"
 
-/* int main() */
-/* { */
-/*    cout << "Initializing variables" << endl; */
-/*    Temporal temp(1000, 1.0); */ 
-/*    Species s(1000, 1, 1, 1); */
-/*    Grid g(32, 1, 1, 1, temp); */
-/*    s.distribute_uniformly(g, 1e-10, 0, 0); */
-/*    s.sinusoidal_position_perturbation(1e-3, 1, g); */
-/*    string file = "filename"; */
-/*    Simulation sim(temp, g, file, s); */
-/*    cout << "Running sim" << endl; */
-/*    double runtime = sim.run(); */
-/*    cout << "Running sim took " << runtime << " seconds" << endl; */
-/*    cout << sim.grid.charge_density << endl; */
-/*    cout << sim.list_species.at(0).x << endl; */
-/* } */
 
 int main()
 {
@@ -34,11 +19,10 @@ int main()
    s.distribute_uniformly(g, 1e-10, 0, 0);
    s.sinusoidal_position_perturbation(1e-3, 1, g);
    g.apply_particle_bc(s);
-   string file = "filename";
-   Simulation sim(temp, g, file, s);
+   Simulation sim(temp, g, "filename.hdf5", s);
    cout << "Running sim" << endl;
    double runtime = sim.run();
    cout << "Running sim took " << runtime << " seconds" << endl;
-   cout << sim.grid.charge_density << endl;
-   cout << sim.list_species.at(0).x << endl;
+   cout << s.N_alive << endl;
+   sim.save();
 }

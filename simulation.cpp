@@ -5,8 +5,10 @@
 #include "simulation.hpp"
 #include "temporal.hpp"
 #include <time.h>
+#include "H5Cpp.h"
 using namespace std;
 using namespace Eigen;
+using namespace H5;
 
 Simulation::Simulation(Temporal& _temporal, Grid& _grid, string _filename, Species &species)
     : temporal(_temporal), grid(_grid), filename(_filename)
@@ -43,9 +45,7 @@ double Simulation::run()
 
 void Simulation::iteration(int i)
 {
-    (void)i; // TODO remove once saving field values
-    //grid.save_field_values
-    /* grid.apply_bc(i); */
+    grid.apply_bc(temporal.dt*i);
     for (Species species: list_species)
     {
         species.interpolate_fields(grid);
@@ -57,8 +57,43 @@ void Simulation::iteration(int i)
     for (Species species: list_species)
     {
         species.position_push();
-        /* species.save_particle_values(i); */
         grid.apply_particle_bc(species);
     }
 }
 
+void Simulation::save()
+{
+    H5File file(filename, H5F_ACC_TRUNC);
+    hsize_t scalar_grid[1];
+    scalar_grid[0] = grid.NG;
+
+    hsize_t transversal_grid[2];
+    transversal_grid[0] = grid.NG;
+    transversal_grid[1] = 2;
+
+    hsize_t vector_grid[2];
+    vector_grid[0] = grid.NG;
+    vector_grid[1] = 3;
+
+    DataSpace scalar_dataspace(1, scalar_grid);
+    DataSpace transversal_dataspace(2, transversal_grid);
+    DataSpace vector_dataspace(2, vector_grid);
+
+    DataSet grid_x = file.createDataSet(H5std_string("grid_x"), PredType::NATIVE_DOUBLE, scalar_dataspace);
+    grid_x.write(grid.x.data(), PredType::NATIVE_DOUBLE);
+
+    DataSet charge_density = file.createDataSet(H5std_string("grid_charge_density"), PredType::NATIVE_DOUBLE, scalar_dataspace);
+    charge_density.write(grid.charge_density.data(), PredType::NATIVE_DOUBLE);
+
+    DataSet current_density_x = file.createDataSet(H5std_string("grid_current_density_x"), PredType::NATIVE_DOUBLE, scalar_dataspace);
+    current_density_x.write(grid.current_density_x.data(), PredType::NATIVE_DOUBLE);
+
+    DataSet current_density_yz = file.createDataSet(H5std_string("grid_current_density_yz"), PredType::NATIVE_DOUBLE, transversal_dataspace);
+    current_density_yz.write(grid.current_density_yz.data(), PredType::NATIVE_DOUBLE);
+
+    DataSet electric_field = file.createDataSet(H5std_string("grid_electric_field"), PredType::NATIVE_DOUBLE, vector_dataspace);
+    electric_field.write(grid.electric_field.data(), PredType::NATIVE_DOUBLE);
+
+    DataSet magnetic_field = file.createDataSet(H5std_string("grid_magnetic_field"), PredType::NATIVE_DOUBLE, vector_dataspace);
+    magnetic_field.write(grid.magnetic_field.data(), PredType::NATIVE_DOUBLE);
+}

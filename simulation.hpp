@@ -8,6 +8,7 @@
 #include "H5Cpp.h"
 using namespace std;
 using namespace Eigen;
+using namespace H5;
 
 class Simulation
 {
@@ -17,13 +18,14 @@ class Simulation
         Grid grid;
         std::vector<Species> list_species;
         
-        string filename;
+        H5std_string filename;
         /* string title; */
     Simulation(Temporal &temporal, Grid &grid, string filename, Species &species);
     Simulation(Temporal &temporal, Grid &grid, string filename, Species &species, Species &species2);
 
     void iteration(int i);
     double run();
+    void save();
 };
 
 #endif /* SIMULATION_H */
