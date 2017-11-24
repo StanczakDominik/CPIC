@@ -14,7 +14,7 @@ int main()
 {
    cout << "Initializing variables" << endl;
    Temporal temp(2, 1.0); 
-   Species s(100, 1, 1, 1);
+   NonPeriodicSpecies s(100, 1, 1, 1, temp.dt);
    s.v = ArrayX3d::Constant(s.N_alive, 3, 0.1);
    /* NonPeriodicGrid g(32, 1, 1, 1, temp, 1, 1, 0.5, 0.25, 2); */
    Grid g(32, 1, 1, 1, temp);

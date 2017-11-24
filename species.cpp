@@ -6,9 +6,9 @@
 using namespace std;
 using namespace Eigen;
 
-Species::Species(int _N, float _q, float _m, float _scaling)
+Species::Species(int _N, float _q, float _m, float _scaling, float _dt)
     : q(_q), m(_m), N(_N), N_alive(_N), scaling(_scaling), eff_q(q*scaling),
-    eff_m(m*scaling), x(N), v(N, 3), E(N, 3), B(N, 3)
+    eff_m(m*scaling), x(N), v(N, 3), dt(_dt), E(N, 3), B(N, 3)
 {
     // compute effective charges and masses of macroparticles
     /* N = _N; */
@@ -108,9 +108,10 @@ typedef Array<bool,Dynamic,1> ArrayXb;
 
 void Species::gather_current_computation(Grid &g)
 {
-    float epsilon = g.dx * 1e-10;
+    float epsilon = g.dx * 1e-2;
     for (int i=0; i < N_alive; i++)
     {
+        cout << "running for particle " << i << " out of " << N_alive << endl;
         float x_velocity = v(i,0);
         bool active = v.row(i).any();
         float time_left = dt;
@@ -119,11 +120,11 @@ void Species::gather_current_computation(Grid &g)
         {
             int logical_coordinate = (int)floor(xp/g.dx);
 
-            bool particle_in_left_half = x(i) / g.dx - logical_coordinate <= 0.5;
+            bool particle_in_left_half = xp / g.dx - logical_coordinate <= 0.5;
             float s, t1;
             if (particle_in_left_half)
             {
-                if(x_velocity > 0)
+                if(x_velocity < 0)
                 {
                     t1 = -(xp - logical_coordinate * g.dx) / x_velocity;
                     s = logical_coordinate * g.dx - epsilon;
@@ -151,7 +152,7 @@ void Species::gather_current_computation(Grid &g)
             float time_overflow = time_left - t1;
             bool switches_cells = time_overflow  > 0;
             float time_in_this_iteration = switches_cells ? t1 : time_left;
-            time_in_this_iteration = (x_velocity == 0) ? dt : time_in_this_iteration;
+            time_in_this_iteration = (x_velocity == 0.0) ? dt : time_in_this_iteration;
 
             int logical_coordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
             int logical_coordinate_trans = particle_in_left_half ? logical_coordinate-1: logical_coordinate + 1;

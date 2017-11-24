@@ -21,7 +21,7 @@ class Species
         float dt;
         ArrayX3d E;
         ArrayX3d B;
-    Species(int N, float q, float m, float scaling);
+    Species(int N, float q, float m, float scaling, float dt);
     double velocity_push();
     void position_push();
     void interpolate_fields(Grid &g);
