@@ -37,9 +37,10 @@ class NonPeriodicGrid : public Grid
         float envelope_center_t;
         float envelope_width;
         float envelope_power;
-        NonPeriodicGrid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal,
-            float _laser_wavelength, float _laser_intensity, float _envelope_center_t, float _envelope_width,
-            float _envelope_power);
+        NonPeriodicGrid(int _NG, float _L, float _c, float _epsilon_0,
+                Temporal &_temporal, float _laser_wavelength, float
+                _laser_intensity, float _envelope_center_t, float
+                _envelope_width, float _envelope_power);
         void apply_bc(float t);
     private:
         float _taui;
