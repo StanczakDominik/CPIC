@@ -108,7 +108,7 @@ typedef Array<bool,Dynamic,1> ArrayXb;
 
 void Species::gather_current_computation(Grid &g)
 {
-    float epsilon = g.dx * 1e-2;
+    float epsilon = g.dx * 1e-7;
     for (int i=0; i < N_alive; i++)
     {
         float x_velocity = v(i,0);
