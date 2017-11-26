@@ -7,7 +7,6 @@
 using namespace std;
 using namespace Eigen;
 #include <vector>
-#include "H5Cpp.h"
 
 float laser_wavelength = 1.064e-6;
 float laser_intensity = 1e21;
@@ -55,16 +54,20 @@ double test_run(int n_macroparticles, int n_cells)
 
 int main()
 {
-   int n_particles[] = {100, 1000, 10000, 50000, 75000};
-   int n_grid[] = {100, 500, 1000, 2000};
-   for(int j = 0; j < 5; j++)
+   int n_particles[] = {1000, 1001, 1002, 1003};
+   int n_grid[] = {32, 33, 34};
+   for(int j = 0; j < 4; j++)
    {
-     for (int i = 0; i < 4; i++)
+     for (int i = 0; i < 3; i++)
      {
         int number_grid = n_grid[i];
         int number_particles = n_particles[j];
-        if (number_particles >= number_grid)
-           cout << number_particles << "," << number_grid << "," << test_run(number_particles, number_grid) << endl;
+        cout << "Running for " << number_grid << " cells, " << number_particles << " particles" << endl; 
+        if (number_particles > number_grid)
+        {
+           double runtime = test_run(number_particles, number_grid);
+           cout << number_particles << "," << number_grid << "," << runtime << endl;
+        }
      }
    }
 }

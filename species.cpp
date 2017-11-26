@@ -8,19 +8,12 @@ using namespace Eigen;
 
 Species::Species(int _N, float _q, float _m, float _scaling, float _dt)
     : q(_q), m(_m), N(_N), N_alive(_N), scaling(_scaling), eff_q(q*scaling),
-    eff_m(m*scaling), x(N), v(N, 3), dt(_dt), E(N, 3), B(N, 3)
+    eff_m(m*scaling), dt(_dt), E(N, 3), B(N, 3)
 {
-    // compute effective charges and masses of macroparticles
-    /* N = _N; */
-    /* q = _q; */
-    /* m = _m; */
-    /* N_alive = N; */
-    /* scaling = _scaling; */
-    /* eff_q = q * scaling; */
-    /* eff_m = m * scaling; */
-    /* // allocate position and velocity arrays */
-    /* x = ArrayXd(N); */
-    /* v = ArrayX3d(N, 3); */
+    x = ArrayXd::Zero(N);
+    v = ArrayX3d::Zero(N,3);
+    E = ArrayX3d::Zero(N,3);
+    B = ArrayX3d::Zero(N,3);
 }
 
 void Species::position_push()
@@ -88,14 +81,16 @@ void Species::interpolate_fields(Grid &g)
 void Species::gather_charge_computation(Grid &g)
 {
     ArrayXd logical_coordinates = floor(x / g.dx);
-    ArrayXd charge_to_right = 1.0 - ((x / g.dx) - logical_coordinates);
+    ArrayXd charge_to_right = (x / g.dx) - logical_coordinates;
    
-    ArrayXd charge_hist_to_left = g.bincount(logical_coordinates, charge_to_right, g.NG+1);
-    logical_coordinates += 1;
-    charge_to_right = 1 - charge_to_right;
-    ArrayXd charge_hist_to_right = g.bincount(logical_coordinates, charge_to_right, g.NG+1);
-
-    g.charge_density = charge_hist_to_right + charge_hist_to_left;
+    g.charge_density = ArrayXd::Zero(g.NG+1);
+    for (int i = 0; i < N_alive; i++)
+    {
+        int logical_coordinate = floor(x(i) / g.dx);
+        float charge_to_right = x(i) / g.dx - logical_coordinate;
+        g.charge_density[logical_coordinate] += 1-charge_to_right;
+        g.charge_density[logical_coordinate+1] += charge_to_right;
+    }
 }
 
 void Species::gather_charge(Grid &g)
@@ -246,8 +241,8 @@ void NonPeriodicSpecies::apply_particle_bc(Grid &g)
         N_alive = N_alive_new;
         x = new_x;
         v = new_v;
-        E.resize(N_alive_new, 3);
-        B.resize(N_alive_new, 3);
+        E.conservativeResize(N_alive_new, 3);
+        B.conservativeResize(N_alive_new, 3);
     }
 }
 
