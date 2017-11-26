@@ -16,6 +16,11 @@ Species::Species(int _N, float _q, float _m, float _scaling, float _dt)
     B = ArrayX3d::Zero(N,3);
 }
 
+Species::~Species()
+{
+}
+
+
 void Species::position_push()
 {
     x += v.col(0) * dt;
@@ -38,9 +43,9 @@ void Species::sinusoidal_position_perturbation(float amplitude, int mode, Grid &
 
 
 
-double Species::velocity_push()
+double Species::velocity_push(Grid& g)
 {
-    float c = 1; // todo reference from grid
+    double c = g.c;
     v.colwise() /= (1 - v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
     ArrayX3d half_force = (q * 0.5 / m * dt) * E;
     v += half_force;
@@ -87,7 +92,7 @@ void Species::gather_charge_computation(Grid &g)
     for (int i = 0; i < N_alive; i++)
     {
         int logical_coordinate = floor(x(i) / g.dx);
-        float charge_to_right = x(i) / g.dx - logical_coordinate;
+        double charge_to_right = x(i) / g.dx - logical_coordinate;
         g.charge_density[logical_coordinate] += 1-charge_to_right;
         g.charge_density[logical_coordinate+1] += charge_to_right;
     }
@@ -103,66 +108,69 @@ typedef Array<bool,Dynamic,1> ArrayXb;
 
 void Species::gather_current_computation(Grid &g)
 {
-    float epsilon = g.dx * 1e-7;
+    double eps = g.dx * 1e-4;
     for (int i=0; i < N_alive; i++)
     {
-        float x_velocity = v(i,0);
+        double x_velocity = v(i,0);
         bool active = v.row(i).any();
-        float time_left = dt;
-        float xp = x(i);
+        double time_left = dt;
+        double xp = x(i);
+        /* int emergency_counter = 0; */
         while(active)
         {
+            /* emergency_counter++; */
             int logical_coordinate = (int)floor(xp/g.dx);
 
             bool particle_in_left_half = xp / g.dx - logical_coordinate <= 0.5;
-            float s, t1;
+            double s, t1;
             if (particle_in_left_half)
             {
-                if(x_velocity < 0)
+                if(x_velocity < 0) // case 1
                 {
                     t1 = -(xp - logical_coordinate * g.dx) / x_velocity;
-                    s = logical_coordinate * g.dx - epsilon;
+                    s = logical_coordinate * g.dx - eps;
                 }
-                else
+                else // case 2
                 {
                     t1 = ((logical_coordinate + 0.5) * g.dx - xp) / x_velocity;
-                    s = (logical_coordinate + 0.5) * g.dx + epsilon;
+                    s = (logical_coordinate + 0.5) * g.dx + eps;
                 }
             }
             else // particle in right half
             {
-                if(x_velocity > 0)
+                if(x_velocity > 0) // case 3
                 {
-                    t1 = ((logical_coordinate + 1 ) * g.dx)/ x_velocity;
-                    s = (logical_coordinate + 1) * g.dx + epsilon;
+                    t1 = ((logical_coordinate + 1 ) * g.dx - xp)/ x_velocity;
+                    s = (logical_coordinate + 1) * g.dx + eps;
                 }
-                else
+                else // case 4
                 {
                     t1 = -(xp - (logical_coordinate + 0.5) * g.dx) / x_velocity;
-                    s = (logical_coordinate + 0.5) * g.dx + epsilon;
+                    s = (logical_coordinate + 0.5) * g.dx - eps;
                 }
             }
+            // t1 MUST ALWAYS BE POSITIVE ELSE REPOSITIONING LOGIC IS WRONG
 
-            float time_overflow = time_left - t1;
+            double time_overflow = time_left - t1;
             bool switches_cells = time_overflow  > 0;
-            float time_in_this_iteration = switches_cells ? t1 : time_left;
+            double time_in_this_iteration = switches_cells ? t1 : time_left;
             time_in_this_iteration = (x_velocity == 0.0) ? dt : time_in_this_iteration;
 
             int logical_coordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
             int logical_coordinate_trans = particle_in_left_half ? logical_coordinate-1: logical_coordinate + 1;
 
             int sign = (int)(particle_in_left_half) * 2 - 1;
-            float distance_to_center = (logical_coordinate + 0.5) * g.dx - xp;
-            float s0 = 1 - sign * distance_to_center / g.dx;
-            float change_in_coverage = sign * x_velocity * time_in_this_iteration / g.dx;
-            float s1 = s0 + change_in_coverage;
-            float w = 0.5 * (s0 + s1);
+            double distance_to_center = (logical_coordinate + 0.5) * g.dx - xp;
+            double s0 = 1 - sign * distance_to_center / g.dx;
+            double change_in_coverage = sign * x_velocity * time_in_this_iteration / g.dx;
+            double s1 = s0 + change_in_coverage;
+            double w = 0.5 * (s0 + s1);
 
             Array3d j_contribution = v.row(i) * eff_q / dt * time_in_this_iteration;
-            float y_contribution_to_current_cell = w * j_contribution(1);
-            float z_contribution_to_current_cell = w * j_contribution(2);
-            float y_contribution_to_next_cell = (1-w) * j_contribution(1);
-            float z_contribution_to_next_cell = (1-w) * j_contribution(2);
+            double y_contribution_to_current_cell = w * j_contribution(1);
+            double z_contribution_to_current_cell = w * j_contribution(2);
+            double y_contribution_to_next_cell = (1-w) * j_contribution(1);
+            double z_contribution_to_next_cell = (1-w) * j_contribution(2);
 
             g.current_density_x(logical_coordinate_long + 1) += j_contribution(0);
             g.current_density_yz(logical_coordinate + 2, 0) += y_contribution_to_current_cell;

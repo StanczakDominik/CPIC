@@ -21,8 +21,9 @@ class Species
         ArrayX3d E;
         ArrayX3d B;
     Species(int N, float q, float m, float scaling, float dt);
-    double velocity_push();
+    virtual ~Species();
     void position_push();
+    double velocity_push(Grid &g);
     virtual void interpolate_fields(Grid &g);
     virtual void apply_particle_bc(Grid &g);
     void distribute_uniformly(Grid &g, float shift, float start_moat, float end_moat);

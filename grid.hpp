@@ -23,6 +23,7 @@ class Grid
         ArrayX3d magnetic_field;
         Temporal temporal;
     Grid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal);
+    virtual ~Grid();
     void initial_solve(bool neutralize);
     void solve();
     ArrayXd bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength);

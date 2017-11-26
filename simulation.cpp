@@ -35,6 +35,7 @@ double Simulation::run()
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i= 0; i < temporal.NT; i++)
     {
+        /* printf("\rIteration%5d/%5d", i, temporal.NT); */
         iteration(i);
     }
     clock_gettime(CLOCK_MONOTONIC, &finish);
@@ -45,20 +46,26 @@ double Simulation::run()
 
 void Simulation::iteration(int i)
 {
+    /* cout << "apply bc" << endl; */
     grid.apply_bc(temporal.dt*i);
     for (int i = 0; i<(int)list_species.size(); i++)
     {
+        /* cout << "species " << i << endl; */
+        /* cout << "interpolate fields" << endl; */
         list_species[i]->interpolate_fields(grid);
-        list_species[i]->velocity_push();
+        /* cout << "velocity push" << endl; */
+        list_species[i]->velocity_push(grid);
+        /* cout << "gather charge" << endl; */
         list_species[i]->gather_charge(grid);
+        /* cout << "gather current" << endl; */
         list_species[i]->gather_current(grid);
-    }
-    grid.solve();
-    for (int i = 0; i<(int)list_species.size(); i++)
-    {
+        /* cout << "position push" << endl; */
         list_species[i]->position_push();
+        /* cout << "apply particle bc" << endl; */
         list_species[i]->apply_particle_bc(grid);
     }
+    /* cout << "grid solve" << endl; */
+    grid.solve();
 }
 
 void Simulation::save()

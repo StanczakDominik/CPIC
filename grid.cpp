@@ -30,6 +30,10 @@ Grid::Grid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal)
     dx = x(1) - x(0);
 }
 
+Grid::~Grid()
+{
+}
+
 ArrayXd Grid::bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength)
 {
     ArrayXd result = ArrayXd::Zero(minlength);
