@@ -8,26 +8,27 @@ using namespace Eigen;
 class Species
 {
     public:
-        float q;
-        float m;
+        double q;
+        double m;
         int N;
         int N_alive;
-        float scaling;
-        float eff_q;
-        float eff_m;
+        double scaling;
+        double eff_q;
+        double eff_m;
         ArrayXd x;
         ArrayX3d v;
-        float dt;
+        double dt;
         ArrayX3d E;
         ArrayX3d B;
-    Species(int N, float q, float m, float scaling, float dt);
+    Species(int N, double q, double m, double scaling, double dt);
     virtual ~Species();
     void position_push();
     double velocity_push(Grid &g);
+    double velocity_push_inverse(Grid& g);
     virtual void interpolate_fields(Grid &g);
     virtual void apply_particle_bc(Grid &g);
-    void distribute_uniformly(Grid &g, float shift, float start_moat, float end_moat);
-    void sinusoidal_position_perturbation(float amplitude, int mode, Grid &g);
+    void distribute_uniformly(Grid &g, double shift, double start_moat, double end_moat);
+    void sinusoidal_position_perturbation(double amplitude, int mode, Grid &g);
     virtual void gather_charge(Grid &g);
     void gather_charge_computation(Grid &g);
     virtual void gather_current(Grid &g);

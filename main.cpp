@@ -8,30 +8,30 @@ using namespace std;
 using namespace Eigen;
 #include <vector>
 
-float laser_wavelength = 1.064e-6;
-float laser_intensity = 1e21;
-float impulse_duration = 1e-13;
+double laser_wavelength = 1.064e-6;
+double laser_intensity = 1e21;
+double impulse_duration = 1e-13;
 
-float length = 1.0655e-5 ;
-float total_time = 2e-13 ;
-float spatial_step = 7.7325e-9 ;
+double length = 1.0655e-5 ;
+double total_time = 2e-13 ;
+double spatial_step = 7.7325e-9 ;
 
-float moat_length_left_side = 3.093e-6 ;
+double moat_length_left_side = 3.093e-6 ;
 
 double scaling = 9.847700361687114e+24;
 
 string category_name = "benchmark_run";
 
-float epsilon_zero = 8.854187817e-12;
-float electric_charge = 1.60217662e-19;
-float lightspeed = 299792458;
-float proton_mass = 1.672621898e-27;
-float electron_rest_mass = 9.10938356e-31;
+double epsilon_zero = 8.854187817e-12;
+double electric_charge = 1.60217662e-19;
+double lightspeed = 299792458;
+double proton_mass = 1.672621898e-27;
+double electron_rest_mass = 9.10938356e-31;
 
 double test_run(int n_macroparticles, int n_cells)
 {
-   cout << "Initializing variables" << endl;
-   Temporal temp(spatial_step/lightspeed, total_time); 
+   Temporal temp(n_cells, total_time); 
+   cout << "Running for " << n_cells << " cells, " << n_macroparticles << " particles, " << temp.NT << "number of iterations " << endl;
    NonPeriodicSpecies electrons(n_macroparticles, -electric_charge, electron_rest_mass, scaling, temp.dt);
    NonPeriodicSpecies protons(n_macroparticles, electric_charge, proton_mass, scaling, temp.dt);
    NonPeriodicGrid g(n_cells, length, lightspeed, epsilon_zero, temp, laser_wavelength, laser_intensity, total_time/2.0, impulse_duration, 6);
@@ -43,9 +43,10 @@ double test_run(int n_macroparticles, int n_cells)
    {
       sim.list_species[i]->distribute_uniformly(g, 0, moat_length_left_side, moat_length_left_side);
       sim.list_species[i]->apply_particle_bc(g);
+      /* cout << "for species " << i << " N_alive is " << sim.list_species[i]->N_alive << endl; */
    }
 
-   cout << "Running sim" << endl;
+   /* cout << "Running sim" << endl; */
    double runtime = sim.run();
    cout << "Running sim took " << runtime << " seconds" << endl;
    sim.save();
@@ -54,21 +55,13 @@ double test_run(int n_macroparticles, int n_cells)
 
 int main()
 {
-   int n_particles[] = {1000, 1001, 1002, 1003};
-   int n_grid[] = {32, 33, 34};
-   for(int j = 0; j < 4; j++)
+   int n_particles[] = {101, 201, 501, 1001, 2001, 5001, 10001, 20001, 50001};
+   int number_grid = 1000;
+   for(int j = 0; j < 9; j++)
    {
-     for (int i = 0; i < 3; i++)
-     {
-        int number_grid = n_grid[i];
-        int number_particles = n_particles[j];
-        cout << "Running for " << number_grid << " cells, " << number_particles << " particles" << endl; 
-        if (number_particles > number_grid)
-        {
-           double runtime = test_run(number_particles, number_grid);
-           cout << number_particles << "," << number_grid << "," << runtime << endl;
-        }
-     }
+     int number_particles = n_particles[j];
+     double runtime = test_run(number_particles, number_grid);
+     cout << number_particles << "," << number_grid << "," << runtime << endl;
    }
 }
 

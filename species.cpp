@@ -6,7 +6,7 @@
 using namespace std;
 using namespace Eigen;
 
-Species::Species(int _N, float _q, float _m, float _scaling, float _dt)
+Species::Species(int _N, double _q, double _m, double _scaling, double _dt)
     : q(_q), m(_m), N(_N), N_alive(_N), scaling(_scaling), eff_q(q*scaling),
     eff_m(m*scaling), dt(_dt), E(N, 3), B(N, 3)
 {
@@ -26,7 +26,7 @@ void Species::position_push()
     x += v.col(0) * dt;
 }
 
-void Species::distribute_uniformly(Grid &g, float shift, float start_moat, float end_moat)
+void Species::distribute_uniformly(Grid &g, double shift, double start_moat, double end_moat)
 {
     x = ArrayXd::LinSpaced(N,
             start_moat + g.L / N * 1e-10,
@@ -35,7 +35,7 @@ void Species::distribute_uniformly(Grid &g, float shift, float start_moat, float
     apply_particle_bc(g);
 }
 
-void Species::sinusoidal_position_perturbation(float amplitude, int mode, Grid &g)
+void Species::sinusoidal_position_perturbation(double amplitude, int mode, Grid &g)
 {
     x += amplitude * cos(2*mode*M_PI*x / g.L);
     apply_particle_bc(g);
@@ -69,14 +69,54 @@ double Species::velocity_push(Grid& g)
     return (final_gamma - 1).sum() * eff_m * c * c;
 }
 
+double Species::velocity_push_inverse(Grid& g)
+{
+    double c = g.c;
+    v.colwise() /= (1 - v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
+    ArrayX3d half_force = (q * 0.5 / m * (-0.5*dt)) * E;
+    v += half_force;
+
+    ArrayX3d t = B * q * (-0.5*dt) / (2 * m);
+    t.colwise() /= (1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
+    ArrayX3d t2 = 2 * t;
+    t2.colwise() /= 1 + t.pow(2).rowwise().sum();
+
+    MatrixX3d uprime = v.matrix();
+    for (int i = 0; i < N_alive; i++)
+    {
+        uprime.row(i) += v.row(i).matrix().cross(t.row(i).matrix());
+        v.row(i).matrix() += uprime.row(i).matrix().cross(t2.row(i).matrix());
+    }
+    v += half_force;
+
+    ArrayXd final_gamma =(1 + v.pow(2).rowwise().sum()/pow(c,2)).sqrt();
+    v.colwise() /= final_gamma;
+
+    return (final_gamma - 1).sum() * eff_m * c * c;
+}
+
+
 void Species::interpolate_fields(Grid &g)
 {
     for (int i =0; i < N_alive; i ++)
     {
-        int on_grid = (x(i) / g.dx);
-        double right_fraction = (x(i) / g.dx) - on_grid;
+        double xp = x(i);
+        int on_grid = (int)(xp / g.dx);
+        double right_fraction = (xp / g.dx) - (double)on_grid;
         E.row(i) = (1 - right_fraction) * g.electric_field.row(on_grid+1) + right_fraction * g.electric_field.row((on_grid+1) % g.NG + 1);
         B.row(i) = (1 - right_fraction) * g.magnetic_field.row(on_grid+1) + right_fraction * g.magnetic_field.row((on_grid+1) % g.NG + 1);
+    }
+}
+
+void NonPeriodicSpecies::interpolate_fields(Grid &g)
+{
+    for (int i =0; i < N_alive; i ++)
+    {
+        double xp = x(i);
+        int on_grid = (int)(xp / g.dx);
+        double right_fraction = (xp / g.dx) - (double)on_grid;
+        E.row(i) = (1 - right_fraction) * g.electric_field.row(on_grid+1) + right_fraction * g.electric_field.row(on_grid+2);
+        B.row(i) = (1 - right_fraction) * g.magnetic_field.row(on_grid+1) + right_fraction * g.magnetic_field.row(on_grid+2);
     }
 }
 
@@ -88,7 +128,6 @@ void Species::gather_charge_computation(Grid &g)
     ArrayXd logical_coordinates = floor(x / g.dx);
     ArrayXd charge_to_right = (x / g.dx) - logical_coordinates;
    
-    g.charge_density = ArrayXd::Zero(g.NG+1);
     for (int i = 0; i < N_alive; i++)
     {
         int logical_coordinate = floor(x(i) / g.dx);
@@ -115,10 +154,10 @@ void Species::gather_current_computation(Grid &g)
         bool active = v.row(i).any();
         double time_left = dt;
         double xp = x(i);
-        /* int emergency_counter = 0; */
+        int emergency_counter = 0;
         while(active)
         {
-            /* emergency_counter++; */
+            emergency_counter++;
             int logical_coordinate = (int)floor(xp/g.dx);
 
             bool particle_in_left_half = xp / g.dx - logical_coordinate <= 0.5;
@@ -149,11 +188,27 @@ void Species::gather_current_computation(Grid &g)
                     s = (logical_coordinate + 0.5) * g.dx - eps;
                 }
             }
-            // t1 MUST ALWAYS BE POSITIVE ELSE REPOSITIONING LOGIC IS WRONG
+
+            if (x_velocity == 0.0)
+            {
+                t1 = std::numeric_limits<double>::infinity();
+                s = xp;
+            }
+
+            if (t1 < 0)
+            {
+                // t1 MUST ALWAYS BE POSITIVE ELSE REPOSITIONING LOGIC IS WRONG
+                cerr << "t1: " << t1 << " vx: " << x_velocity << endl;
+                exit(1);
+            }
 
             double time_overflow = time_left - t1;
             bool switches_cells = time_overflow  > 0;
             double time_in_this_iteration = switches_cells ? t1 : time_left;
+            if (s > g.L)
+            {
+                switches_cells = false;
+            }
             time_in_this_iteration = (x_velocity == 0.0) ? dt : time_in_this_iteration;
 
             int logical_coordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
@@ -194,17 +249,6 @@ void Species::gather_current(Grid &g)
     g.current_density_x(0) = 0;
     g.current_density_x.segment(1, 2) += g.current_density_x.tail(2);
     g.current_density_x.tail(2) = 0;
-}
-
-void NonPeriodicSpecies::interpolate_fields(Grid &g)
-{
-    for (int i =0; i < N_alive; i ++)
-    {
-        int on_grid = (x(i) / g.dx);
-        double right_fraction = (x(i) / g.dx) - on_grid;
-        E.row(i) = (1 - right_fraction) * g.electric_field.row(on_grid+1) + right_fraction * g.electric_field.row(on_grid+2);
-        B.row(i) = (1 - right_fraction) * g.magnetic_field.row(on_grid+1) + right_fraction * g.magnetic_field.row(on_grid+2);
-    }
 }
 
 void NonPeriodicSpecies::gather_charge(Grid &g)

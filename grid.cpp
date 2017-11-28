@@ -9,11 +9,11 @@
 using namespace std;
 using namespace Eigen;
 
-ArrayXd PythonLinSpaced(int NG, float x_min, float x_max)
+ArrayXd PythonLinSpaced(int NG, double x_min, double x_max)
 {
     // Equivalent to python's numpy.linspace(... endpoint = False;
     ArrayXd x(NG);
-    float dx = (x_max-x_min)/NG;
+    double dx = (x_max-x_min)/NG;
     for (int i = 1; i < NG; i++)
     {
         x(i) = i * dx;
@@ -22,7 +22,7 @@ ArrayXd PythonLinSpaced(int NG, float x_min, float x_max)
 }
 
 
-Grid::Grid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal)
+Grid::Grid(int _NG, double _L, double _c, double _epsilon_0, Temporal &_temporal)
     : c(_c), epsilon_0(_epsilon_0), NG(_NG), L(_L), charge_density(NG+1), current_density_x(NG+3),
     current_density_yz(NG+4, 2), electric_field(NG+2, 3), magnetic_field(NG+2, 3), temporal(_temporal)
 {
@@ -69,16 +69,16 @@ void Grid::initial_solve(bool neutralize)
     int N_fft = floor((dim_x-1)/2) + 1; 
     for (int i = 0; i < N_fft; i++)
     {
-        k.imag()(i) = float(i / (float)dim_x);
+        k.imag()(i) = double(i / (double)dim_x);
         if ((i + N_fft < dim_x))
         {
             if ( N_fft % 2 == 0)
             {
-                k.imag()(i+N_fft) = float((i - N_fft)/(float)dim_x);
+                k.imag()(i+N_fft) = double((i - N_fft)/(double)dim_x);
             }
             else
             {
-                k.imag()(i+N_fft) = float((i - N_fft + 1)/(float)dim_x);
+                k.imag()(i+N_fft) = double((i - N_fft + 1)/(double)dim_x);
             }
         }
     }
@@ -124,14 +124,14 @@ void Grid::solve()
     magnetic_field.col(2) = (Fplus - Fminus)/c;
 }
 
-void Grid::apply_bc(float t)
+void Grid::apply_bc(double t)
 {
     (void)t;
 }
 
-NonPeriodicGrid::NonPeriodicGrid(int _NG, float _L, float _c, float _epsilon_0, Temporal &_temporal,
-        float _laser_wavelength, float _laser_intensity, float _envelope_center_t, float _envelope_width,
-        float _envelope_power)
+NonPeriodicGrid::NonPeriodicGrid(int _NG, double _L, double _c, double _epsilon_0, Temporal &_temporal,
+        double _laser_wavelength, double _laser_intensity, double _envelope_center_t, double _envelope_width,
+        double _envelope_power)
     : Grid(_NG, _L, _c, _epsilon_0, _temporal),
     laser_omega(2*M_PI*_c/_laser_wavelength),
     laser_amplitude(sqrt(_laser_intensity/(epsilon_0*c))),
@@ -145,7 +145,7 @@ NonPeriodicGrid::NonPeriodicGrid(int _NG, float _L, float _c, float _epsilon_0, 
 }
 
 
-void NonPeriodicGrid::apply_bc(float t)
+void NonPeriodicGrid::apply_bc(double t)
 {
     // skipping laser phase;
     double wave = laser_amplitude * sin(laser_omega * t); 

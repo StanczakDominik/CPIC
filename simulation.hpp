@@ -23,8 +23,9 @@ class Simulation
     Simulation(Temporal &temporal, Grid &grid, string filename, Species *species);
     Simulation(Temporal &temporal, Grid &grid, string filename, Species *species, Species *species2);
 
-    virtual void iteration(int i);
-    virtual double run();
+    void iteration(int i);
+    double run();
+    void grid_species_init();
     void save();
 };
 

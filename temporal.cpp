@@ -4,14 +4,14 @@
 
 using namespace std;
 using namespace Eigen;
-Temporal::Temporal(int _NT, float _T)
+Temporal::Temporal(int _NT, double _T)
     : T(_T), NT(_NT)
 {
     t = ArrayXd::LinSpaced(NT, 0, T);
     dt = t(1) - t(0); // TODO check whether this fits python
 }
 
-Temporal::Temporal(float _dt, float _T)
+Temporal::Temporal(double _dt, double _T)
     : dt(_dt), T(_T)
 {
     NT = (int)(T/dt);

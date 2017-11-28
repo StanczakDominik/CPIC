@@ -7,13 +7,13 @@ using namespace Eigen;
 class Temporal
 {
     public:
-        float dt;
-        float T;
+        double dt;
+        double T;
         int NT;
 
         ArrayXd t;
-    Temporal(int _NT, float _T);
-    Temporal(float _dt, float _T);
+    Temporal(int _NT, double _T);
+    Temporal(double _dt, double _T);
     Temporal(Temporal &_temporal);
 };
 
