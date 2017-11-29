@@ -133,7 +133,7 @@ void Species::gather_charge_computation(Grid &g)
         int logical_coordinate = floor(x(i) / g.dx);
         double charge_to_right = x(i) / g.dx - logical_coordinate;
         g.charge_density[logical_coordinate] += 1-charge_to_right;
-        g.charge_density[logical_coordinate+1] += charge_to_right;
+        g.charge_density[(logical_coordinate+1) % g.NG] += charge_to_right;
     }
 }
 
@@ -156,7 +156,6 @@ void NonPeriodicSpecies::gather_charge_computation(Grid &g)
 void Species::gather_charge(Grid &g)
 {
     gather_charge_computation(g);
-    g.charge_density.head(1) += g.charge_density.tail(1);
 }
 
 typedef Array<bool,Dynamic,1> ArrayXb;
@@ -396,8 +395,8 @@ void NonPeriodicSpecies::apply_particle_bc(Grid &g)
         N_alive = N_alive_new;
         x = new_x;
         v = new_v;
-        E.conservativeResize(N_alive_new, 3);
-        B.conservativeResize(N_alive_new, 3);
+        E.resize(N_alive_new, 3);
+        B.resize(N_alive_new, 3);
     }
 }
 

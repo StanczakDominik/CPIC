@@ -1,8 +1,5 @@
 CC=g++
-CFLAGS=-I. -Wall -Werror -Wextra -std=c++11 -lfftw3
-# CFLAGS=-I. -Wall -Werror -Wextra -std=c++11 -lfftw3 -march=native
-# HDF5_FLAGS= -D_FORTIFY_SOURCE=2 -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector-strong -L/usr/lib -lhdf5_hl_cpp -lhdf5_cpp -lhdf5_hl -lhdf5 -Wl,-O1,--sort-common,--as-needed,-z,relro -lz -ldl -lm -Wl,-rpath -Wl,/usr/lib
-# CFLAGS += $(HDF5_FLAGS)
+CFLAGS=-I. -Wall -Werror -Wextra -std=c++11 -lfftw3 #-Og
 
 all: main
 main: main.o grid.o species.o simulation.o temporal.o

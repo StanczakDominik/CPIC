@@ -29,7 +29,7 @@ double lightspeed = 299792458;
 double proton_mass = 1.672621898e-27;
 double electron_rest_mass = 9.10938356e-31;
 
-double test_run(int n_macroparticles, int n_cells)
+double test_run(int n_macroparticles, int n_cells, bool save)
 {
    Temporal temp(n_cells, total_time); 
    cout << "Running for " << n_cells << " cells, " << n_macroparticles << " particles, " << temp.NT << " iterations " << endl;
@@ -44,26 +44,23 @@ double test_run(int n_macroparticles, int n_cells)
    {
       sim.list_species[i]->distribute_uniformly(g, 0, moat_length_left_side, moat_length_left_side);
       sim.list_species[i]->apply_particle_bc(g);
-      /* cout << "for species " << i << " N_alive is " << sim.list_species[i]->N_alive << endl; */
    }
 
-   /* cout << "Running sim" << endl; */
-   double runtime = sim.run();
+   double runtime = sim.run(save);
    cout << "\rRunning sim took " << runtime << " seconds" << endl;
-   sim.save();
    return runtime;
 }
 
 int main()
 {
    /* int n_particles[] = {100, 200, 500, 750, 1750, 2000, 2500, 5000, 10000, 20000, 50000}; */
-   int n_particles[] = {100, 20000, 50000};
+   int n_particles[] = {100, 500, 750, 1000};
    int number_grid = 1000;
    std::ofstream out("dane.csv");
-   for(int j = 0; j < 3; j++)
+   for(int j = 0; j < 4; j++)
    {
      int number_particles = n_particles[j];
-     double runtime = test_run(number_particles, number_grid);
+     double runtime = test_run(number_particles, number_grid, true);
      out << number_particles << "," << runtime << endl;
    }
 }

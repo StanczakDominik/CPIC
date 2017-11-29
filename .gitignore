@@ -3,3 +3,4 @@
 main
 .ropeproject
 *.hdf5
+*.csv

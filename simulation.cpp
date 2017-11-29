@@ -32,18 +32,16 @@ void Simulation::grid_species_init()
     for (int i = 0; i<(int)list_species.size(); i++)
     {
         list_species[i]->interpolate_fields(grid);
-        list_species[i]->velocity_push(grid);
+        list_species[i]->velocity_push_inverse(grid);
         list_species[i]->gather_charge(grid);
         list_species[i]->gather_current(grid);
-        /* cout << "position push" << endl; */
         list_species[i]->position_push();
-        /* cout << "apply particle bc" << endl; */
         list_species[i]->apply_particle_bc(grid);
     }
 }
 
 
-double Simulation::run()
+double Simulation::run(bool should_save)
 {
     struct timespec start, finish;
     double elapsed;
@@ -55,6 +53,8 @@ double Simulation::run()
     {
         /* printf("\rIteration%5d/%5d", i, temporal.NT); */
         iteration(i);
+        if (should_save)
+            save(i);
     }
     clock_gettime(CLOCK_MONOTONIC, &finish);
     elapsed = (finish.tv_sec - start.tv_sec);
@@ -84,46 +84,13 @@ void Simulation::iteration(int i)
         cout << "\riteration " << i << ", apply particle bc" ;
         list_species[j]->apply_particle_bc(grid);
     }
-    cout << "\riteration " << i << ", grid solve" ;
+    cout << "\riteration " << i << ", grid solve\r" ;
     grid.solve();
 }
 
-void Simulation::save()
+void Simulation::save(int i)
 {
-
-    /* H5File file(filename, H5F_ACC_TRUNC); */
-    /* hsize_t scalar_grid[1]; */
-    /* scalar_grid[0] = grid.NG; */
-
-    /* hsize_t transversal_grid[2]; */
-    /* transversal_grid[0] = grid.NG; */
-    /* transversal_grid[1] = 2; */
-
-    /* hsize_t vector_grid[2]; */
-    /* vector_grid[0] = grid.NG; */
-    /* vector_grid[1] = 3; */
-
-    /* Group group = Group( file.createGroup( "/grid" )); */
-
-    /* DataSpace scalar_dataspace(1, scalar_grid); */
-    /* DataSpace transversal_dataspace(2, transversal_grid); */
-    /* DataSpace vector_dataspace(2, vector_grid); */
-
-    /* DataSet grid_x = file.createDataSet(H5std_string("x"), PredType::NATIVE_DOUBLE, scalar_dataspace); */
-    /* grid_x.write(grid.x.data(), PredType::NATIVE_DOUBLE); */
-
-    /* DataSet charge_density = group.createDataSet(H5std_string("rho"), PredType::NATIVE_DOUBLE, scalar_dataspace); */
-    /* charge_density.write(grid.charge_density.data(), PredType::NATIVE_DOUBLE); */
-
-    /* DataSet current_density_x = group.createDataSet(H5std_string("current_x"), PredType::NATIVE_DOUBLE, scalar_dataspace); */
-    /* current_density_x.write(grid.current_density_x.data(), PredType::NATIVE_DOUBLE); */
-
-    /* DataSet current_density_yz = group.createDataSet(H5std_string("current_yz"), PredType::NATIVE_DOUBLE, transversal_dataspace); */
-    /* current_density_yz.write(grid.current_density_yz.data(), PredType::NATIVE_DOUBLE); */
-
-    /* DataSet electric_field = group.createDataSet(H5std_string("Efield"), PredType::NATIVE_DOUBLE, vector_dataspace); */
-    /* electric_field.write(grid.electric_field.data(), PredType::NATIVE_DOUBLE); */
-
-    /* DataSet magnetic_field = group.createDataSet(H5std_string("Bfield"), PredType::NATIVE_DOUBLE, vector_dataspace); */
-    /* magnetic_field.write(grid.magnetic_field.data(), PredType::NATIVE_DOUBLE); */
+   std::ostringstream stringStream;
+   stringStream << i << ".csv";
+   std::string filename = stringStream.str();
 }
