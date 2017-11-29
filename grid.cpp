@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include "grid.hpp"
 #include "H5Cpp.h"
+#include <fstream>
 
 using namespace std;
 using namespace Eigen;
@@ -156,4 +157,28 @@ void NonPeriodicGrid::apply_bc(double t)
 }
 
 
+string array_filename(string arr, int i)
+{
+   std::ostringstream stringStream;
+   stringStream << arr << "." << i << ".csv";
+   return stringStream.str();
+}
 
+void Grid::save(int i)
+{
+    std::ofstream cd(array_filename("charge_density", i));
+    cd << charge_density;
+    cd.close();
+    std::ofstream jx(array_filename("current_density_x", i));
+    jx << current_density_x;
+    jx.close();
+    std::ofstream jyz(array_filename("current_density_yz", i));
+    jyz << current_density_yz;
+    jyz.close();
+    std::ofstream ef(array_filename("electric_field", i));
+    ef << electric_field;
+    ef.close();
+    std::ofstream bf(array_filename("magnetic_field", i));
+    bf << magnetic_field;
+    bf.close();
+}

@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-I. -Wall -Werror -Wextra -std=c++11 -lfftw3 #-Og
+CFLAGS=-I. -Wall -Werror -Wextra -std=c++11 -lfftw3 -O2
 
 all: main
 main: main.o grid.o species.o simulation.o temporal.o

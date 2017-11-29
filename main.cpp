@@ -44,6 +44,7 @@ double test_run(int n_macroparticles, int n_cells, bool save)
    {
       sim.list_species[i]->distribute_uniformly(g, 0, moat_length_left_side, moat_length_left_side);
       sim.list_species[i]->apply_particle_bc(g);
+      sim.list_species[i]->v = ArrayX3d::Constant(n_macroparticles,3, (1-2*i)*lightspeed/10000.0);
    }
 
    double runtime = sim.run(save);
@@ -53,15 +54,16 @@ double test_run(int n_macroparticles, int n_cells, bool save)
 
 int main()
 {
-   /* int n_particles[] = {100, 200, 500, 750, 1750, 2000, 2500, 5000, 10000, 20000, 50000}; */
-   int n_particles[] = {100, 500, 750, 1000};
+   int n_particles[] = {100, 200, 500, 750, 1000, 1750, 2000, 2500, 5000, 10000, 20000, 50000};
+   vector<int> nparticles(n_particles, n_particles + sizeof(n_particles) / sizeof(n_particles[0]));
+   /* int n_particles[] = {1000}; */
    int number_grid = 1000;
    std::ofstream out("dane.csv");
-   for(int j = 0; j < 4; j++)
+   for(int number_particles: nparticles)
    {
-     int number_particles = n_particles[j];
-     double runtime = test_run(number_particles, number_grid, true);
+     double runtime = test_run(number_particles, number_grid, false);
      out << number_particles << "," << runtime << endl;
    }
+   out.close();
 }
 

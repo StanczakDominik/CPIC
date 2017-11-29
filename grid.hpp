@@ -28,6 +28,7 @@ class Grid
     void solve();
     ArrayXd bincount(const Ref<ArrayXd>& cell_numbers, const Ref<ArrayXd>& weights, int minlength);
     void apply_bc(double t);
+    void save(int i);
 };
 
 class NonPeriodicGrid : public Grid

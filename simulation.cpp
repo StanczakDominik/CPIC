@@ -90,7 +90,5 @@ void Simulation::iteration(int i)
 
 void Simulation::save(int i)
 {
-   std::ostringstream stringStream;
-   stringStream << i << ".csv";
-   std::string filename = stringStream.str();
+   grid.save(i);
 }
