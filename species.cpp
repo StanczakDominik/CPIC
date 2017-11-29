@@ -137,6 +137,22 @@ void Species::gather_charge_computation(Grid &g)
     }
 }
 
+void NonPeriodicSpecies::gather_charge_computation(Grid &g)
+{
+    ArrayXd logical_coordinates = floor(x / g.dx);
+    ArrayXd charge_to_right = (x / g.dx) - logical_coordinates;
+   
+    for (int i = 0; i < N_alive; i++)
+    {
+        int logical_coordinate = floor(x(i) / g.dx);
+        double charge_to_right = x(i) / g.dx - logical_coordinate;
+        if(logical_coordinate > 0 && logical_coordinate < g.NG + 2)
+            g.charge_density[logical_coordinate] += 1-charge_to_right;
+        if(logical_coordinate + 1 > 0 && logical_coordinate + 1 < g.NG + 2)
+            g.charge_density[logical_coordinate+1] += charge_to_right;
+    }
+}
+
 void Species::gather_charge(Grid &g)
 {
     gather_charge_computation(g);
@@ -195,11 +211,92 @@ void Species::gather_current_computation(Grid &g)
                 s = xp;
             }
 
-            if (t1 < 0)
+            double time_overflow = time_left - t1;
+            bool switches_cells = time_overflow  > 0;
+            double time_in_this_iteration = switches_cells ? t1 : time_left;
+            if (s > g.L)
             {
-                // t1 MUST ALWAYS BE POSITIVE ELSE REPOSITIONING LOGIC IS WRONG
-                cerr << "t1: " << t1 << " vx: " << x_velocity << endl;
-                exit(1);
+                switches_cells = false;
+            }
+            time_in_this_iteration = (x_velocity == 0.0) ? dt : time_in_this_iteration;
+
+            int logical_coordinate_long = particle_in_left_half ? logical_coordinate: logical_coordinate + 1;
+            int logical_coordinate_trans = particle_in_left_half ? logical_coordinate-1: logical_coordinate + 1;
+
+            int sign = (int)(particle_in_left_half) * 2 - 1;
+            double distance_to_center = (logical_coordinate + 0.5) * g.dx - xp;
+            double s0 = 1 - sign * distance_to_center / g.dx;
+            double change_in_coverage = sign * x_velocity * time_in_this_iteration / g.dx;
+            double s1 = s0 + change_in_coverage;
+            double w = 0.5 * (s0 + s1);
+
+            Array3d j_contribution = v.row(i) * eff_q / dt * time_in_this_iteration;
+            double y_contribution_to_current_cell = w * j_contribution(1);
+            double z_contribution_to_current_cell = w * j_contribution(2);
+            double y_contribution_to_next_cell = (1-w) * j_contribution(1);
+            double z_contribution_to_next_cell = (1-w) * j_contribution(2);
+
+            g.current_density_x(logical_coordinate_long + 2) += j_contribution(0);
+            g.current_density_yz(logical_coordinate + 2, 0) += y_contribution_to_current_cell;
+            g.current_density_yz(logical_coordinate + 2, 1) += z_contribution_to_current_cell;
+            g.current_density_yz(logical_coordinate_trans + 2, 0) += y_contribution_to_next_cell;
+            g.current_density_yz(logical_coordinate_trans + 2, 1) += z_contribution_to_next_cell;
+
+            active = switches_cells;
+            time_left = time_overflow;
+            xp = s;
+        }
+    }
+}
+
+void NonPeriodicSpecies::gather_current_computation(Grid &g)
+{
+    double eps = g.dx * 1e-4;
+    for (int i=0; i < N_alive; i++)
+    {
+        double x_velocity = v(i,0);
+        bool active = v.row(i).any();
+        double time_left = dt;
+        double xp = x(i);
+        int emergency_counter = 0;
+        while(active)
+        {
+            emergency_counter++;
+            int logical_coordinate = (int)floor(xp/g.dx);
+
+            bool particle_in_left_half = xp / g.dx - logical_coordinate <= 0.5;
+            double s, t1;
+            if (particle_in_left_half)
+            {
+                if(x_velocity < 0) // case 1
+                {
+                    t1 = -(xp - logical_coordinate * g.dx) / x_velocity;
+                    s = logical_coordinate * g.dx - eps;
+                }
+                else // case 2
+                {
+                    t1 = ((logical_coordinate + 0.5) * g.dx - xp) / x_velocity;
+                    s = (logical_coordinate + 0.5) * g.dx + eps;
+                }
+            }
+            else // particle in right half
+            {
+                if(x_velocity > 0) // case 3
+                {
+                    t1 = ((logical_coordinate + 1 ) * g.dx - xp)/ x_velocity;
+                    s = (logical_coordinate + 1) * g.dx + eps;
+                }
+                else // case 4
+                {
+                    t1 = -(xp - (logical_coordinate + 0.5) * g.dx) / x_velocity;
+                    s = (logical_coordinate + 0.5) * g.dx - eps;
+                }
+            }
+
+            if (x_velocity == 0.0)
+            {
+                t1 = std::numeric_limits<double>::infinity();
+                s = xp;
             }
 
             double time_overflow = time_left - t1;
@@ -227,11 +324,18 @@ void Species::gather_current_computation(Grid &g)
             double y_contribution_to_next_cell = (1-w) * j_contribution(1);
             double z_contribution_to_next_cell = (1-w) * j_contribution(2);
 
-            g.current_density_x(logical_coordinate_long + 1) += j_contribution(0);
-            g.current_density_yz(logical_coordinate + 2, 0) += y_contribution_to_current_cell;
-            g.current_density_yz(logical_coordinate + 2, 1) += z_contribution_to_current_cell;
-            g.current_density_yz(logical_coordinate_trans + 2, 0) += y_contribution_to_next_cell;
-            g.current_density_yz(logical_coordinate_trans + 2, 1) += z_contribution_to_next_cell;
+            if (logical_coordinate_long + 2 >= 0 && logical_coordinate_long + 2 < g.NG + 3)
+                g.current_density_x(logical_coordinate_long + 2) += j_contribution(0);
+            if (logical_coordinate +2 >= 0 && logical_coordinate + 2 < g.NG + 4)
+            {
+                g.current_density_yz(logical_coordinate + 2, 0) += y_contribution_to_current_cell;
+                g.current_density_yz(logical_coordinate + 2, 1) += z_contribution_to_current_cell;
+            }
+            if (logical_coordinate_trans +2 >= 0 && logical_coordinate_trans + 2 < g.NG + 4)
+            {
+                g.current_density_yz(logical_coordinate_trans + 2, 0) += y_contribution_to_next_cell;
+                g.current_density_yz(logical_coordinate_trans + 2, 1) += z_contribution_to_next_cell;
+            }
 
             active = switches_cells;
             time_left = time_overflow;
@@ -239,7 +343,6 @@ void Species::gather_current_computation(Grid &g)
         }
     }
 }
-
 void Species::gather_current(Grid &g)
 {
     gather_current_computation(g);

@@ -4,6 +4,7 @@
 #include "simulation.hpp"
 #include "temporal.hpp"
 #include <Eigen/Dense>
+#include <fstream>
 using namespace std;
 using namespace Eigen;
 #include <vector>
@@ -31,7 +32,7 @@ double electron_rest_mass = 9.10938356e-31;
 double test_run(int n_macroparticles, int n_cells)
 {
    Temporal temp(n_cells, total_time); 
-   cout << "Running for " << n_cells << " cells, " << n_macroparticles << " particles, " << temp.NT << "number of iterations " << endl;
+   cout << "Running for " << n_cells << " cells, " << n_macroparticles << " particles, " << temp.NT << " iterations " << endl;
    NonPeriodicSpecies electrons(n_macroparticles, -electric_charge, electron_rest_mass, scaling, temp.dt);
    NonPeriodicSpecies protons(n_macroparticles, electric_charge, proton_mass, scaling, temp.dt);
    NonPeriodicGrid g(n_cells, length, lightspeed, epsilon_zero, temp, laser_wavelength, laser_intensity, total_time/2.0, impulse_duration, 6);
@@ -48,20 +49,22 @@ double test_run(int n_macroparticles, int n_cells)
 
    /* cout << "Running sim" << endl; */
    double runtime = sim.run();
-   cout << "Running sim took " << runtime << " seconds" << endl;
+   cout << "\rRunning sim took " << runtime << " seconds" << endl;
    sim.save();
    return runtime;
 }
 
 int main()
 {
-   int n_particles[] = {101, 201, 501, 1001, 2001, 5001, 10001, 20001, 50001};
+   /* int n_particles[] = {100, 200, 500, 750, 1750, 2000, 2500, 5000, 10000, 20000, 50000}; */
+   int n_particles[] = {100, 20000, 50000};
    int number_grid = 1000;
-   for(int j = 0; j < 9; j++)
+   std::ofstream out("dane.csv");
+   for(int j = 0; j < 3; j++)
    {
      int number_particles = n_particles[j];
      double runtime = test_run(number_particles, number_grid);
-     cout << number_particles << "," << number_grid << "," << runtime << endl;
+     out << number_particles << "," << runtime << endl;
    }
 }
 

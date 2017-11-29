@@ -30,9 +30,9 @@ class Species
     void distribute_uniformly(Grid &g, double shift, double start_moat, double end_moat);
     void sinusoidal_position_perturbation(double amplitude, int mode, Grid &g);
     virtual void gather_charge(Grid &g);
-    void gather_charge_computation(Grid &g);
+    virtual void gather_charge_computation(Grid &g);
     virtual void gather_current(Grid &g);
-    void gather_current_computation(Grid &g);
+    virtual void gather_current_computation(Grid &g);
 };
 
 class NonPeriodicSpecies : public Species
@@ -42,7 +42,9 @@ class NonPeriodicSpecies : public Species
         void apply_particle_bc(Grid &g);
         void interpolate_fields(Grid &g);
         void gather_charge(Grid &g);
+        void gather_charge_computation(Grid &g);
         void gather_current(Grid &g);
+        void gather_current_computation(Grid &g);
 };
 
 
